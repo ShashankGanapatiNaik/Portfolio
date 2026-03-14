@@ -12,17 +12,39 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 // In-memory store for pending requests { token: { name, email, requestedAt, approved } }
 const pendingRequests = new Map();
 
-// Gmail transporter
-const getTransporter = () =>
-  nodemailer.createTransport({
-    service: "gmail",
+// Gmail transporter — explicit SMTP settings for production compatibility
+const getTransporter = () => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // use SSL
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASSWORD,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
+  return transporter;
+};
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+
+// Verify Gmail on startup
+const verifyGmail = async () => {
+  try {
+    const t = getTransporter();
+    await t.verify();
+    console.log("✅ Gmail SMTP connected successfully");
+  } catch (err) {
+    console.error("❌ Gmail SMTP failed:", err.message);
+    console.error("   GMAIL_USER:", process.env.GMAIL_USER);
+    console.error("   HAS_PASSWORD:", !!process.env.GMAIL_APP_PASSWORD);
+    console.error("   PASSWORD_LEN:", process.env.GMAIL_APP_PASSWORD?.length);
+  }
+};
+verifyGmail();
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // ── POST /api/resume/request ─────────────────────────────────────────────────
@@ -86,10 +108,19 @@ router.post("/request", async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error("Resume request error:", err.message);
-    res
-      .status(500)
-      .json({ error: "Failed to send request. Please try emailing directly." });
+    console.error("Resume request error FULL:", {
+      message: err.message,
+      code: err.code,
+      response: err.response,
+      GMAIL_USER: process.env.GMAIL_USER,
+      HAS_PASSWORD: !!process.env.GMAIL_APP_PASSWORD,
+      PASSWORD_LENGTH: process.env.GMAIL_APP_PASSWORD?.length,
+    });
+    res.status(500).json({
+      error: "Failed to send request. Please try emailing directly.",
+      detail: err.message,
+      code: err.code,
+    });
   }
 });
 
