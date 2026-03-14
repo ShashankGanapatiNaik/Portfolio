@@ -48,16 +48,13 @@ const chatLimiter = rateLimit({
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Postman, curl, mobile)
       if (!origin) return callback(null, true);
-
       const allowed =
         origin.includes("localhost") ||
         origin.includes("127.0.0.1") ||
         origin.includes(".vercel.app") ||
         origin.includes("portfolio-frontend") ||
         (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL);
-
       if (allowed) {
         callback(null, true);
       } else {
