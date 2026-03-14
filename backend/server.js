@@ -20,6 +20,9 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
+// Required for Render/Heroku/Railway — trust reverse proxy
+app.set("trust proxy", 1);
+
 // Connect to MongoDB
 connectDB();
 

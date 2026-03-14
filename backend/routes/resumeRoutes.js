@@ -2,6 +2,50 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const nodemailer = require("nodemailer");
+const axios = require("axios");
+
+// Send email — tries SMTP first, falls back to Resend API (HTTPS, works everywhere)
+const sendEmail = async ({ to, subject, html, from }) => {
+  // Try nodemailer SMTP first
+  try {
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: from || `"Portfolio Bot" <${process.env.GMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log("✅ Email sent via SMTP to:", to);
+    return;
+  } catch (smtpErr) {
+    console.error("SMTP failed, trying Resend API:", smtpErr.message);
+  }
+
+  // Fallback: Resend API (free 100 emails/day, no SMTP needed)
+  if (process.env.RESEND_API_KEY) {
+    await axios.post(
+      "https://api.resend.com/emails",
+      {
+        from: process.env.RESEND_FROM || "Portfolio <onboarding@resend.dev>",
+        to,
+        subject,
+        html,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    console.log("✅ Email sent via Resend API to:", to);
+    return;
+  }
+
+  throw new Error(
+    "All email methods failed. Configure SMTP or RESEND_API_KEY.",
+  );
+};
 const crypto = require("crypto");
 const { Resume } = require("../models");
 const auth = require("../middleware/authMiddleware");
@@ -12,21 +56,25 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 // In-memory store for pending requests { token: { name, email, requestedAt, approved } }
 const pendingRequests = new Map();
 
-// Gmail transporter — explicit SMTP settings for production compatibility
+// Gmail transporter — port 587 with STARTTLS (works on Render free tier)
 const getTransporter = () => {
-  const transporter = nodemailer.createTransport({
+  return nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // use SSL
+    port: 587,
+    secure: false, // STARTTLS
+    requireTLS: true,
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASSWORD,
     },
     tls: {
       rejectUnauthorized: false,
+      minVersion: "TLSv1.2",
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
-  return transporter;
 };
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
@@ -72,9 +120,7 @@ router.post("/request", async (req, res) => {
     const approveUrl = `${BACKEND_URL}/api/resume/approve/${token}`;
     const rejectUrl = `${BACKEND_URL}/api/resume/reject/${token}`;
 
-    const transporter = getTransporter();
-    await transporter.sendMail({
-      from: `"Portfolio Bot" <${process.env.GMAIL_USER}>`,
+    await sendEmail({
       to: process.env.GMAIL_USER,
       subject: `📄 Resume Download Request from ${name}`,
       html: `
@@ -153,8 +199,7 @@ router.get("/approve/:token", async (req, res) => {
   // Send download link email to the requester
   try {
     const downloadUrl = `${FRONTEND_URL}/resume/download/${req.params.token}`;
-    const transporter = getTransporter();
-    await transporter.sendMail({
+    await sendEmail({
       from: `"Shashank Ganapati Naik" <${process.env.GMAIL_USER}>`,
       to: request.email,
       subject: `✅ Your Resume Download is Approved — Shashank Naik`,
