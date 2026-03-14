@@ -5,6 +5,8 @@ import {
   checkResumeStatus,
   getResumeDownloadUrl,
 } from "../services/api";
+
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 import toast from "react-hot-toast";
 
 const TYPED_STRINGS = [
@@ -342,7 +344,7 @@ export default function Hero() {
                 }}
               >
                 <img
-                  src="/api/profile/photo"
+                  src={`${API_BASE}/profile/photo`}
                   alt="Shashank Ganapati Naik"
                   style={{
                     width: "100%",

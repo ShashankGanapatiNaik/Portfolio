@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
 import {
   loginAdmin,
   getProjects,
@@ -223,7 +225,9 @@ export default function Admin() {
       );
       toast.success("Profile photo uploaded! Refresh portfolio to see it.");
       // Force reload the preview
-      const img = document.querySelector('img[src="/api/profile/photo"]');
+      const img = document.querySelector(
+        "img[src={`${API_BASE}/profile/photo`}]",
+      );
       if (img) img.src = `/api/profile/photo?t=${Date.now()}`;
     } catch {
       toast.error("Photo upload failed");
@@ -578,7 +582,7 @@ export default function Admin() {
                   }}
                 >
                   <img
-                    src="/api/profile/photo"
+                    src={`${API_BASE}/profile/photo`}
                     alt="Current profile"
                     style={{
                       width: "100%",
