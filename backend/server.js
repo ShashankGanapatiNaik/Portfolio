@@ -44,23 +44,25 @@ const chatLimiter = rateLimit({
   message: { error: "Chat rate limit exceeded." },
 });
 
-// CORS — allow multiple origins
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:5173",
-  "http://localhost:3000",
-].filter(Boolean);
-
+// CORS — allow localhost + all Vercel deployments for this project
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Postman, mobile apps, curl)
+      // Allow requests with no origin (Postman, curl, mobile)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.some((o) => origin.startsWith(o))) {
+
+      const allowed =
+        origin.includes("localhost") ||
+        origin.includes("127.0.0.1") ||
+        origin.includes(".vercel.app") ||
+        origin.includes("portfolio-frontend") ||
+        (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL);
+
+      if (allowed) {
         callback(null, true);
       } else {
         console.log("CORS blocked origin:", origin);
-        callback(null, true); // allow all for now — restrict after testing
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
