@@ -155,14 +155,14 @@ export default function Hero() {
       />
 
       <div className="section-container w-full pt-32 pb-16">
-        {/* Two column layout: text LEFT, photo RIGHT */}
+        {/* Two column layout: text LEFT, photo RIGHT — always side by side */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "3rem",
-            flexWrap: "wrap",
+            gap: "2rem",
+            flexWrap: "nowrap",
           }}
         >
           {/* ── LEFT: Text Content ── */}
@@ -170,7 +170,7 @@ export default function Hero() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            style={{ flex: "1", minWidth: "300px", maxWidth: "600px" }}
+            style={{ flex: "1", minWidth: 0, maxWidth: "600px" }}
           >
             <motion.p
               variants={itemVariants}
@@ -181,14 +181,14 @@ export default function Hero() {
 
             <motion.h1
               variants={itemVariants}
-              className="font-display text-5xl md:text-7xl font-bold text-lightest-slate leading-tight mb-2"
+              className="font-display text-3xl sm:text-5xl md:text-7xl font-bold text-lightest-slate leading-tight mb-2"
             >
               Shashank Ganapati Naik.
             </motion.h1>
 
             <motion.h2
               variants={itemVariants}
-              className="font-display text-3xl md:text-5xl font-bold text-slate leading-tight mb-6"
+              className="font-display text-xl sm:text-3xl md:text-5xl font-bold text-slate leading-tight mb-6"
             >
               I'm a{" "}
               <span className="text-accent typing-cursor">{typedText}</span>
@@ -196,7 +196,7 @@ export default function Hero() {
 
             <motion.p
               variants={itemVariants}
-              className="font-body text-slate text-lg leading-relaxed mb-10"
+              className="font-body text-slate text-sm sm:text-lg leading-relaxed mb-10"
             >
               Motivated CS student at{" "}
               <span className="text-accent font-medium">Reva University</span>{" "}
@@ -246,10 +246,10 @@ export default function Hero() {
               </motion.a>
             </motion.div>
 
-            {/* Social Links */}
+            {/* Social Links — hidden on very small screens */}
             <motion.div
               variants={itemVariants}
-              className="flex items-center gap-6 flex-wrap"
+              className="hidden sm:flex items-center gap-6 flex-wrap"
             >
               {[
                 {
@@ -335,8 +335,8 @@ export default function Hero() {
               <div
                 style={{
                   position: "relative",
-                  width: "300px",
-                  height: "300px",
+                  width: "clamp(160px, 25vw, 300px)",
+                  height: "clamp(160px, 25vw, 300px)",
                   borderRadius: "50%",
                   overflow: "hidden",
                   zIndex: 2,
@@ -359,7 +359,7 @@ export default function Hero() {
                   }}
                 />
               </div>
-              {/* CGPA badge — bottom right */}
+              {/* CGPA badge — hidden on mobile */}
               <motion.div
                 animate={{ y: [0, -8, 0] }}
                 transition={{
@@ -377,6 +377,8 @@ export default function Hero() {
                   borderRadius: "12px",
                   padding: "8px 14px",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                  display: "var(--badge-display, flex)",
+                  flexDirection: "column",
                 }}
               >
                 <p
