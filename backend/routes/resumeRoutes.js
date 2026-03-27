@@ -138,24 +138,26 @@ router.get('/approve/:token', async (req, res) => {
   request.approved = true;
   const downloadUrl = `${BACKEND_URL}/api/resume/download/${req.params.token}`;
 
-  // Try sending email to user
+  // Send download link to YOUR OWN email so you can forward to user
   let emailSent = false;
   let emailError = '';
   try {
     await sendEmail({
-      to: request.email,
-      subject: `✅ Your Resume Download is Ready — Shashank Naik`,
+      to: process.env.ADMIN_EMAIL || process.env.GMAIL_USER,
+      subject: `🔗 Resume Link for ${request.name} (${request.email})`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a192f;color:#ccd6f6;padding:32px;border-radius:12px;border:1px solid #233554;">
           <div style="text-align:center;margin-bottom:20px;">
             <span style="font-size:48px;">✅</span>
           </div>
-          <h2 style="color:#64ffda;text-align:center;">Resume Access Approved!</h2>
-          <p style="color:#ccd6f6;">Hi <strong>${request.name}</strong>,</p>
-          <p style="color:#8892b0;line-height:1.6;">
-            Shashank has approved your resume download request.
-            Click the button below to download directly — no need to visit the portfolio.
-          </p>
+          <h2 style="color:#64ffda;text-align:center;">Resume Download Link</h2>
+          <p style="color:#ccd6f6;">You approved a resume request. Forward this link to the requester:</p>
+          <table style="width:100%;margin:12px 0;background:#0a192f;border-radius:8px;padding:12px;">
+            <tr><td style="color:#8892b0;padding:4px 0;font-size:14px;">👤 Name</td><td style="color:#ccd6f6;font-weight:bold;">${request.name}</td></tr>
+            <tr><td style="color:#8892b0;padding:4px 0;font-size:14px;">📧 Email</td><td style="color:#64ffda;">${request.email}</td></tr>
+            <tr><td style="color:#8892b0;padding:4px 0;font-size:14px;">💼 Reason</td><td style="color:#ccd6f6;">${request.reason}</td></tr>
+          </table>
+          <p style="color:#8892b0;font-size:13px;">Forward the button below to <strong style="color:#64ffda;">${request.email}</strong></p>
           <div style="text-align:center;margin:32px 0;">
             <a href="${downloadUrl}"
                style="display:inline-block;padding:16px 40px;background:#64ffda;color:#0a192f;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;">
@@ -180,42 +182,108 @@ router.get('/approve/:token', async (req, res) => {
     console.error('❌ Could not send email to user:', err.message);
   }
 
-  // Always show the download link on the approve page so Shashank can manually share if email failed
   res.send(`<!DOCTYPE html>
 <html><head><title>✅ Approved</title>
 <style>
-  body{font-family:Arial,sans-serif;background:#0a192f;color:#ccd6f6;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px;}
-  .box{background:#112240;border:1px solid #233554;border-radius:12px;padding:40px;max-width:540px;width:100%;text-align:center;}
-  h1{color:#64ffda;margin-bottom:8px;}
-  .info{background:#0a192f;border-radius:8px;padding:16px;margin:16px 0;text-align:left;}
-  .info p{margin:6px 0;color:#8892b0;font-size:14px;}
-  .info strong{color:#ccd6f6;}
-  .download-btn{display:inline-block;padding:14px 36px;background:#64ffda;color:#0a192f;text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px;margin:20px 0;}
-  .link-box{background:#0a192f;border:1px solid #64ffda33;border-radius:8px;padding:12px;margin:16px 0;word-break:break-all;font-size:12px;color:#64ffda;text-align:left;}
-  .status{padding:10px 16px;border-radius:6px;margin:12px 0;font-size:13px;}
-  .success{background:rgba(100,255,218,0.1);border:1px solid rgba(100,255,218,0.3);color:#64ffda;}
-  .warning{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:#ff6b6b;}
-  a.back{color:#64ffda;font-size:13px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;background:#0a192f;color:#ccd6f6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .box{background:#112240;border:1px solid #233554;border-radius:16px;padding:36px;max-width:580px;width:100%;}
+  .header{text-align:center;margin-bottom:28px;}
+  .icon{width:64px;height:64px;border-radius:50%;background:rgba(100,255,218,0.15);border:2px solid #64ffda;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;}
+  h1{color:#64ffda;font-size:1.6rem;margin-bottom:4px;}
+  .subtitle{color:#8892b0;font-size:14px;}
+  .section{background:#0a192f;border:1px solid #233554;border-radius:10px;padding:16px;margin-bottom:16px;}
+  .section-title{color:#64ffda;font-size:11px;font-family:monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid #233554;}
+  .row:last-child{border-bottom:none;}
+  .label{color:#8892b0;font-size:13px;min-width:80px;}
+  .value{color:#ccd6f6;font-size:13px;text-align:right;word-break:break-all;}
+  .value.accent{color:#64ffda;}
+  .email-status{border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:8px;}
+  .email-ok{background:rgba(100,255,218,0.08);border:1px solid rgba(100,255,218,0.25);color:#64ffda;}
+  .email-fail{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);color:#ff8a8a;}
+  .link-section{background:#0a192f;border:1px solid rgba(100,255,218,0.2);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .link-label{color:#64ffda;font-size:11px;font-family:monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  .link-url{color:#a8b2d8;font-size:12px;word-break:break-all;line-height:1.5;font-family:monospace;}
+  .copy-hint{color:#8892b0;font-size:11px;margin-top:6px;}
+  .download-btn{display:block;width:100%;padding:14px;background:#64ffda;color:#0a192f;text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px;text-align:center;margin-bottom:12px;}
+  .back-link{display:block;text-align:center;color:#8892b0;font-size:13px;text-decoration:none;margin-top:8px;}
+  .back-link:hover{color:#64ffda;}
+  .divider{border:none;border-top:1px solid #233554;margin:20px 0;}
 </style></head>
 <body><div class="box">
-  <h1>✅ Resume Approved!</h1>
-  <div class="info">
-    <p>👤 <strong>${request.name}</strong></p>
-    <p>📧 <strong>${request.email}</strong></p>
+
+  <div class="header">
+    <div class="icon">✅</div>
+    <h1>Resume Approved!</h1>
+    <p class="subtitle">Request approved — download link ready</p>
   </div>
 
+  <!-- Requester Details -->
+  <div class="section">
+    <div class="section-title">📋 Request Details</div>
+    <div class="row">
+      <span class="label">👤 Name</span>
+      <span class="value">${request.name}</span>
+    </div>
+    <div class="row">
+      <span class="label">📧 Email</span>
+      <span class="value accent">${request.email}</span>
+    </div>
+    <div class="row">
+      <span class="label">💼 Reason</span>
+      <span class="value">${request.reason}</span>
+    </div>
+    <div class="row">
+      <span class="label">🕐 Requested</span>
+      <span class="value">${request.requestedAt}</span>
+    </div>
+  </div>
+
+  <!-- Email Status -->
   ${emailSent
-    ? `<div class="status success">📧 Download link sent to ${request.email}</div>`
-    : `<div class="status warning">⚠️ Email failed (${emailError})<br/>Share the link below manually:</div>`
+    ? `<div class="status success">📧 Download link sent to YOUR Gmail — forward it to ${request.email}</div>`
+    : `<div class="status warning">⚠️ Email failed — copy the link below and send manually to ${request.email}</div>`
   }
 
-  <p style="color:#8892b0;font-size:14px;margin:16px 0 8px;">Download link for ${request.name}:</p>
-  <div class="link-box">${downloadUrl}</div>
+  <!-- Resume Download Link -->
+  <div class="link-section">
+    <div class="link-label">🔗 Resume Download Link</div>
+    <div class="link-url">${downloadUrl}</div>
+    <div class="copy-hint">⏰ This link expires in 24 hours &nbsp;|&nbsp; Share this with ${request.name} if email failed</div>
+  </div>
 
-  <a href="${downloadUrl}" class="download-btn">📄 Download Resume</a>
+  <!-- Message to send manually -->
+  <div class="section">
+    <div class="section-title">💬 Message to share with ${request.name}</div>
+    <div style="background:#112240;border-radius:8px;padding:14px;font-size:13px;color:#a8b2d8;line-height:1.8;font-family:monospace;white-space:pre-wrap;margin-bottom:10px;" id="shareMsg">Hi ${request.name},
 
-  <br/><br/>
-  <a href="${FRONTEND_URL}" class="back">← Back to Portfolio</a>
+Shashank has approved your resume download request!
+
+📄 Download Link:
+${downloadUrl}
+
+⚠️ This link expires in 24 hours.
+
+Feel free to reach out:
+✉️  shashankng626@gmail.com
+🔗  linkedin.com/in/shashank-naik-6b449428a</div>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('shareMsg').innerText).then(()=>{this.textContent='✅ Copied!';setTimeout(()=>this.textContent='📋 Copy Message',2000)})"
+      style="width:100%;padding:10px;background:rgba(100,255,218,0.08);border:1px solid rgba(100,255,218,0.3);border-radius:6px;color:#64ffda;font-size:13px;cursor:pointer;margin-bottom:6px;">
+      📋 Copy Message
+    </button>
+    <button onclick="navigator.clipboard.writeText('${downloadUrl}').then(()=>{this.textContent='✅ Link Copied!';setTimeout(()=>this.textContent='🔗 Copy Link Only',2000)})"
+      style="width:100%;padding:10px;background:transparent;border:1px solid #233554;border-radius:6px;color:#8892b0;font-size:13px;cursor:pointer;">
+      🔗 Copy Link Only
+    </button>
+  </div>
+
+  <!-- Download Button -->
+  <a href="${downloadUrl}" class="download-btn">📄 Download Resume Now</a>
+
+  <hr class="divider"/>
+  <a href="${FRONTEND_URL}" class="back-link">← Back to Portfolio</a>
+
 </div></body></html>`);
 });
 
