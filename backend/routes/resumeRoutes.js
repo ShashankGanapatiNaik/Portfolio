@@ -136,26 +136,49 @@ router.get("/approve/:token", async (req, res) => {
 
   request.approved = true;
 
-  // Send download link to requester
+  // Direct backend download URL — works even if user left the page
+  const directDownloadUrl = `${BACKEND_URL}/api/resume/download/${req.params.token}`;
+
+  // Send direct download link email to requester
   try {
-    const downloadUrl = `${FRONTEND_URL}/resume/download/${req.params.token}`;
     await sendEmail({
       to: request.email,
-      subject: `✅ Resume Access Approved — Shashank Naik`,
+      subject: `✅ Your Resume Download is Ready — Shashank Naik`,
       html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a192f;color:#ccd6f6;padding:32px;border-radius:12px;">
-          <h2 style="color:#64ffda;">Resume Access Approved! 🎉</h2>
-          <p style="color:#8892b0;">Hi ${request.name},</p>
-          <p style="color:#ccd6f6;">Shashank has approved your request. Click the button below to download his resume now.</p>
-          <div style="margin:28px 0;">
-            <a href="${downloadUrl}" style="display:inline-block;padding:14px 36px;background:#64ffda;color:#0a192f;text-decoration:none;border-radius:6px;font-weight:bold;font-size:16px;">📄 Download Resume</a>
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a192f;color:#ccd6f6;padding:32px;border-radius:12px;border:1px solid #233554;">
+          <div style="text-align:center;margin-bottom:24px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:rgba(100,255,218,0.15);border:2px solid #64ffda;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">✅</div>
           </div>
-          <p style="color:#8892b0;font-size:13px;">This link expires in 24 hours.</p>
+          <h2 style="color:#64ffda;text-align:center;margin-bottom:8px;">Resume Access Approved!</h2>
+          <p style="color:#8892b0;text-align:center;margin-top:0;">Your request has been approved by Shashank</p>
           <hr style="border-color:#233554;margin:24px 0;"/>
-          <p style="color:#8892b0;font-size:13px;">Feel free to reach out: <a href="mailto:shashankng626@gmail.com" style="color:#64ffda;">shashankng626@gmail.com</a></p>
+          <p style="color:#ccd6f6;">Hi <strong>${request.name}</strong>,</p>
+          <p style="color:#8892b0;line-height:1.6;">
+            Shashank has reviewed and approved your resume download request. 
+            Click the button below to download his resume directly.
+          </p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${directDownloadUrl}" 
+               style="display:inline-block;padding:16px 40px;background:#64ffda;color:#0a192f;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;letter-spacing:0.5px;">
+              📄 Download Resume Now
+            </a>
+          </div>
+          <div style="background:#112240;border-radius:8px;padding:16px;margin-bottom:24px;">
+            <p style="color:#8892b0;font-size:13px;margin:0;">⚠️ This download link expires in <strong style="color:#64ffda;">24 hours</strong>.</p>
+            <p style="color:#8892b0;font-size:13px;margin:8px 0 0;">If the button doesn't work, copy this link:</p>
+            <p style="color:#64ffda;font-size:12px;word-break:break-all;margin:4px 0 0;">${directDownloadUrl}</p>
+          </div>
+          <hr style="border-color:#233554;margin:24px 0;"/>
+          <p style="color:#8892b0;font-size:13px;text-align:center;">
+            Questions? Reach out at 
+            <a href="mailto:shashankng626@gmail.com" style="color:#64ffda;">shashankng626@gmail.com</a>
+            or connect on 
+            <a href="https://www.linkedin.com/in/shashank-naik-6b449428a" style="color:#64ffda;">LinkedIn</a>
+          </p>
         </div>
       `,
     });
+    console.log("✅ Approval email sent to:", request.email);
   } catch (err) {
     console.error("Failed to send approval email:", err.message);
   }
@@ -163,7 +186,7 @@ router.get("/approve/:token", async (req, res) => {
   res.send(
     htmlPage(
       "✅ Approved!",
-      `Resume access granted to <strong>${request.name}</strong> (${request.email}). A download link has been sent to their email.`,
+      `Resume access granted to <strong>${request.name}</strong> (${request.email}).<br/><br/>A direct download link has been sent to their email. They can download it even if they left the page.`,
       "#64ffda",
     ),
   );
