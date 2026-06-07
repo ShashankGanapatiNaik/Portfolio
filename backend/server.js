@@ -5,7 +5,7 @@ const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 require("dotenv").config();
 
-const connectDB = require("./config/db");
+const { connectDB, getDbStatus } = require("./config/db");
 
 // Routes
 const projectRoutes = require("./routes/projectRoutes");
@@ -44,7 +44,19 @@ const chatLimiter = rateLimit({
   message: { error: "Chat rate limit exceeded." },
 });
 
-// CORS — allow localhost + all Vercel deployments for this project
+// Reject API requests when MongoDB is not connected
+app.use("/api", (req, res, next) => {
+  if (req.path === "/health") return next();
+  if (!getDbStatus()) {
+    return res.status(503).json({
+      error: "Service unavailable. MongoDB is not connected.",
+      detail: "Check MONGODB_URI and MongoDB Atlas network access.",
+    });
+  }
+  next();
+});
+
+// CORS — allow localhost + all Vercel deployments
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -72,7 +84,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 
-// Static files for uploads
+// Static files
 app.use("/uploads", express.static("uploads"));
 
 // API Routes
@@ -102,5 +114,10 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port http://localhost:${PORT}`);
+  if (!getDbStatus()) {
+    console.warn(
+      "⚠️ Warning: MongoDB is not connected. API requests will return 503.",
+    );
+  }
 });
