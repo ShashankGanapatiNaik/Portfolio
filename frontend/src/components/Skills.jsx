@@ -11,27 +11,6 @@ const FALLBACK_SKILLS = [
   { category: 'Developer Tools', skills: [{ name: 'Git/GitHub', level: 90 }, { name: 'JWT Auth', level: 85 }, { name: 'OpenCV', level: 75 }, { name: 'DeepFace', level: 72 }] },
 ];
 
-function SkillBar({ name, level, delay = 0 }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-  return (
-    <div ref={ref} className="mb-3">
-      <div className="flex justify-between mb-1">
-        <span className="text-light-slate text-sm font-body">{name}</span>
-        <span className="font-mono text-xs text-accent">{level}%</span>
-      </div>
-      <div className="h-1.5 bg-lightest-navy rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={isInView ? { width: `${level}%` } : { width: 0 }}
-          transition={{ duration: 1.2, delay: delay, ease: 'easeOut' }}
-          className="h-full bg-accent rounded-full"
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function Skills() {
   const [skills, setSkills] = useState(FALLBACK_SKILLS);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -96,15 +75,27 @@ export default function Skills() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: i * 0.1 }}
             whileHover={{ borderColor: 'var(--border-accent)' }}
-            className="card"
+            className="card flex flex-col justify-between"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-accent" />
-              <h3 className="font-display font-semibold text-lightest-slate text-sm">{cat.category}</h3>
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-accent" />
+                <h3 className="font-display font-semibold text-lightest-slate text-sm">{cat.category}</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {cat.skills?.map((skill, j) => (
+                  <motion.span
+                    key={skill.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ duration: 0.3, delay: j * 0.05 }}
+                    className="tag hover:border-accent hover:text-accent cursor-default"
+                  >
+                    {skill.name}
+                  </motion.span>
+                ))}
+              </div>
             </div>
-            {cat.skills?.map((skill, j) => (
-              <SkillBar key={skill.name} name={skill.name} level={skill.level} delay={j * 0.1} />
-            ))}
           </motion.div>
         ))}
       </div>

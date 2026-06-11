@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'ShashankGanapatiNaik';
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN && process.env.GITHUB_TOKEN !== 'undefined' && process.env.GITHUB_TOKEN.trim() !== '' ? process.env.GITHUB_TOKEN : null;
 
 const githubHeaders = {
   'Accept': 'application/vnd.github.v3+json',
@@ -78,6 +78,13 @@ router.get('/', async (req, res) => {
     console.error('GitHub API error:', err.message);
     if (err.response) {
       console.error('GitHub API Response Data:', err.response.data);
+      if (err.response.status === 401) {
+        console.error('💡 Recommendation: The GITHUB_TOKEN configured in your environment variables is invalid, expired, or revoked. Please verify and set a valid token in your hosting platform dashboard.');
+      } else if (err.response.status === 403) {
+        console.error('💡 Recommendation: Rate limit exceeded or access forbidden (403). If unauthenticated, please configure GITHUB_TOKEN in your hosting platform to enable up to 5000 requests per hour.');
+      }
+    } else {
+      console.error('💡 Recommendation: Check backend server internet connectivity and ensure api.github.com is reachable.');
     }
     res.status(500).json({ error: 'Failed to fetch GitHub data' });
   }

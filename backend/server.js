@@ -61,12 +61,13 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
+      const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, "") : null;
       const allowed =
         origin.includes("localhost") ||
         origin.includes("127.0.0.1") ||
         origin.includes(".vercel.app") ||
         origin.includes("portfolio-frontend") ||
-        (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL);
+        (frontendUrl && origin === frontendUrl);
       if (allowed) {
         callback(null, true);
       } else {
