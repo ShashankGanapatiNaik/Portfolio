@@ -38,9 +38,9 @@ export default function About() {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
       >
-        <div className="section-subtitle-line">
-          <h2 className="section-title whitespace-nowrap">About Me</h2>
-          <div className="accent-line" />
+        <div className="section-header left">
+          <span className="section-eyebrow">01. Profile</span>
+          <h2 className="section-title">About Me</h2>
         </div>
       </motion.div>
 
@@ -112,24 +112,20 @@ export default function About() {
         >
           <p className="font-mono text-xs text-accent mb-6">Education</p>
           <div className="space-y-4">
-            {education.map((edu, i) => (
+             {education.map((edu, i) => (
               <motion.div
                 key={i}
                 whileHover={{
-                  scale: 1.02,
-                  borderColor: "rgba(100,255,218,0.4)",
+                  borderColor: "var(--border-accent)",
                 }}
                 className="card relative overflow-hidden"
               >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-r ${edu.color} pointer-events-none`}
-                />
                 <div className="relative">
                   <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
                     <h3 className="text-lightest-slate font-display font-semibold text-sm leading-tight">
                       {edu.degree}
                     </h3>
-                    <span className="font-mono text-accent text-xs bg-accent/10 px-2 py-1 rounded whitespace-nowrap">
+                    <span className="font-mono text-slate text-[11px] border border-border px-2 py-0.5 rounded whitespace-nowrap">
                       {edu.grade}
                     </span>
                   </div>
@@ -142,7 +138,6 @@ export default function About() {
             ))}
           </div>
 
-          {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 mt-8">
             {[
               { label: "CGPA", value: "9.41" },
@@ -151,8 +146,8 @@ export default function About() {
             ].map((stat) => (
               <motion.div
                 key={stat.label}
-                whileHover={{ scale: 1.05 }}
-                className="bg-light-navy border border-lightest-navy rounded-xl p-4 text-center"
+                whileHover={{ borderColor: "var(--border-accent)" }}
+                className="card text-center p-4"
               >
                 <p className="font-display text-2xl font-bold text-accent">
                   {stat.value}

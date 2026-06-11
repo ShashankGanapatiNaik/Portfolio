@@ -25,7 +25,7 @@ function SkillBar({ name, level, delay = 0 }) {
           initial={{ width: 0 }}
           animate={isInView ? { width: `${level}%` } : { width: 0 }}
           transition={{ duration: 1.2, delay: delay, ease: 'easeOut' }}
-          className="h-full bg-gradient-to-r from-brand-600 to-accent rounded-full"
+          className="h-full bg-accent rounded-full"
         />
       </div>
     </div>
@@ -53,9 +53,9 @@ export default function Skills() {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
       >
-        <div className="section-subtitle-line">
-          <h2 className="section-title whitespace-nowrap">Skills</h2>
-          <div className="accent-line" />
+        <div className="section-header center">
+          <span className="section-eyebrow">02. Expertise</span>
+          <h2 className="section-title">Skills & Technologies</h2>
         </div>
       </motion.div>
 
@@ -68,8 +68,8 @@ export default function Skills() {
       >
         <button
           onClick={() => setActiveCategory(null)}
-          className={`px-4 py-1.5 font-mono text-xs rounded-full border transition-all ${
-            !activeCategory ? 'border-accent text-accent bg-accent/10' : 'border-lightest-navy text-slate hover:border-accent/50 hover:text-accent'
+          className={`px-[10px] py-[4px] font-mono text-[13px] font-medium rounded border transition-all ${
+            !activeCategory ? 'border-accent text-accent' : 'border-border text-slate hover:border-border-accent hover:text-accent'
           }`}
         >
           All
@@ -78,8 +78,8 @@ export default function Skills() {
           <button
             key={s.category}
             onClick={() => setActiveCategory(s.category === activeCategory ? null : s.category)}
-            className={`px-4 py-1.5 font-mono text-xs rounded-full border transition-all ${
-              activeCategory === s.category ? 'border-accent text-accent bg-accent/10' : 'border-lightest-navy text-slate hover:border-accent/50 hover:text-accent'
+            className={`px-[10px] py-[4px] font-mono text-[13px] font-medium rounded border transition-all ${
+              activeCategory === s.category ? 'border-accent text-accent' : 'border-border text-slate hover:border-border-accent hover:text-accent'
             }`}
           >
             {s.category}
@@ -95,7 +95,7 @@ export default function Skills() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: i * 0.1 }}
-            whileHover={{ borderColor: 'rgba(100,255,218,0.3)', y: -4 }}
+            whileHover={{ borderColor: 'var(--border-accent)' }}
             className="card"
           >
             <div className="flex items-center gap-2 mb-4">

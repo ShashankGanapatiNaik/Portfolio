@@ -576,8 +576,8 @@ export default function Admin() {
                     height: 80,
                     borderRadius: "50%",
                     overflow: "hidden",
-                    border: "2px solid #64ffda",
-                    background: "#233554",
+                    border: "1px solid var(--border)",
+                    background: "var(--bg-tertiary)",
                     flexShrink: 0,
                   }}
                 >
@@ -592,7 +592,7 @@ export default function Admin() {
                     onError={(e) => {
                       e.target.style.display = "none";
                       e.target.parentNode.innerHTML =
-                        '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64ffda;font-family:Syne;font-size:1.5rem;font-weight:800;">SN</div>';
+                        '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-primary);font-family:Inter,sans-serif;font-size:1.5rem;font-weight:700;">SN</div>';
                     }}
                   />
                 </div>

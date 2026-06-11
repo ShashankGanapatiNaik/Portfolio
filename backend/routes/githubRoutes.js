@@ -11,14 +11,34 @@ const githubHeaders = {
 };
 
 router.get('/', async (req, res) => {
-  try {
+  const fetchWithHeaders = async (headers) => {
     const [userRes, reposRes] = await Promise.all([
-      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers: githubHeaders }),
-      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`, { headers: githubHeaders })
+      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers }),
+      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`, { headers })
     ]);
+    return { user: userRes.data, repos: reposRes.data };
+  };
 
-    const user = userRes.data;
-    const repos = reposRes.data;
+  try {
+    let data;
+    try {
+      data = await fetchWithHeaders(githubHeaders);
+    } catch (err) {
+      const isAuthError = err.response && (err.response.status === 401 || err.response.status === 403);
+      if (isAuthError && GITHUB_TOKEN) {
+        console.warn(
+          `⚠️ GitHub API request failed with status ${err.response.status} (possibly invalid/expired GITHUB_TOKEN). Retrying without token...`
+        );
+        const publicHeaders = {
+          'Accept': 'application/vnd.github.v3+json'
+        };
+        data = await fetchWithHeaders(publicHeaders);
+      } else {
+        throw err;
+      }
+    }
+
+    const { user, repos } = data;
 
     // Compute language stats
     const langMap = {};
@@ -56,6 +76,9 @@ router.get('/', async (req, res) => {
     });
   } catch (err) {
     console.error('GitHub API error:', err.message);
+    if (err.response) {
+      console.error('GitHub API Response Data:', err.response.data);
+    }
     res.status(500).json({ error: 'Failed to fetch GitHub data' });
   }
 });

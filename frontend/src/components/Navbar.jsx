@@ -32,8 +32,8 @@ export default function Navbar() {
         right: 0,
         zIndex: 50,
         backgroundColor: scrolled ? "var(--navbar-bg)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid var(--border)" : "none",
+        backdropFilter: scrolled ? "blur(8px)" : "none",
+        borderBottom: scrolled ? "1px solid var(--navbar-border)" : "none",
         transition: "all 0.3s ease",
       }}
     >
@@ -41,13 +41,13 @@ export default function Navbar() {
         {/* Logo */}
         <motion.a
           href="#hero"
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.02 }}
           style={{
             fontFamily: "JetBrains Mono, monospace",
-            color: "var(--accent)",
+            color: "var(--text-primary)",
             fontSize: "1.2rem",
-            fontWeight: 700,
-            letterSpacing: "0.1em",
+            fontWeight: 600,
+            letterSpacing: "-0.02em",
             textDecoration: "none",
           }}
         >

@@ -240,15 +240,13 @@ export default function Chatbot() {
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 z-50 flex items-center justify-center"
         style={{
-          background: "linear-gradient(135deg, #0a192f 0%, #112240 100%)",
-          border: "2px solid #64ffda",
+          background: "var(--bg-secondary)",
+          border: "1px solid var(--border)",
           borderRadius: isOpen ? "50%" : "50px",
           padding: isOpen ? "0" : "0 18px",
           height: "52px",
           minWidth: "52px",
-          boxShadow: isOpen
-            ? "0 0 20px rgba(100,255,218,0.4)"
-            : "0 0 25px rgba(100,255,218,0.35)",
+          boxShadow: "none",
           transition:
             "border-radius 0.3s ease, padding 0.3s ease, min-width 0.3s ease",
           gap: "8px",
@@ -274,7 +272,7 @@ export default function Chatbot() {
                 width="18"
                 height="18"
                 fill="none"
-                stroke="#64ffda"
+                stroke="var(--text-primary)"
                 strokeWidth="2.5"
                 viewBox="0 0 24 24"
               >
@@ -299,7 +297,8 @@ export default function Chatbot() {
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, #64ffda, #0d9488)",
+                  background: "var(--accent-tint)",
+                  border: "1px solid var(--border)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -309,19 +308,19 @@ export default function Chatbot() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
-                    fill="#0a192f"
+                    fill="var(--bg-secondary)"
                   />
-                  <circle cx="8.5" cy="10" r="1.5" fill="#64ffda" />
-                  <circle cx="15.5" cy="10" r="1.5" fill="#64ffda" />
+                  <circle cx="8.5" cy="10" r="1.5" fill="var(--text-primary)" />
+                  <circle cx="15.5" cy="10" r="1.5" fill="var(--text-primary)" />
                   <path
                     d="M8.5 14.5c1 1.5 5.5 1.5 7 0"
-                    stroke="#64ffda"
+                    stroke="var(--text-primary)"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                   />
                   <path
                     d="M12 2v2M12 20v2M2 12h2M20 12h2"
-                    stroke="#64ffda"
+                    stroke="var(--text-primary)"
                     strokeWidth="1"
                     strokeLinecap="round"
                     opacity="0.5"
@@ -330,10 +329,10 @@ export default function Chatbot() {
               </div>
               <span
                 style={{
-                  fontFamily: "JetBrains Mono, monospace",
+                  fontFamily: "var(--font-mono)",
                   fontSize: "13px",
-                  fontWeight: "600",
-                  color: "#64ffda",
+                  fontWeight: "500",
+                  color: "var(--text-primary)",
                   whiteSpace: "nowrap",
                 }}
               >

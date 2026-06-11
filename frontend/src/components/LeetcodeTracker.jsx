@@ -38,16 +38,16 @@ export default function LeetcodeTracker() {
   ];
 
   return (
-    <section ref={ref} className="bg-light-navy/30">
-      <div className="section-container">
+    <section id="leetcode" ref={ref} className="section-container">
+      <div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <div className="section-subtitle-line">
-            <h2 className="section-title whitespace-nowrap">LeetCode Stats</h2>
-            <div className="accent-line" />
+          <div className="section-header center">
+            <span className="section-eyebrow">04. Problem Solving</span>
+            <h2 className="section-title">LeetCode Activity</h2>
           </div>
         </motion.div>
 
@@ -79,7 +79,7 @@ export default function LeetcodeTracker() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ background: '#112240', border: '1px solid #233554', borderRadius: '8px', color: '#ccd6f6', fontFamily: 'JetBrains Mono' }}
+                      contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}
                       formatter={(v, n) => [v, n]}
                     />
                   </PieChart>

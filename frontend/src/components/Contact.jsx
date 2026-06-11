@@ -34,9 +34,9 @@ export default function Contact() {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
       >
-        <div className="section-subtitle-line">
-          <h2 className="section-title whitespace-nowrap">Contact</h2>
-          <div className="accent-line" />
+        <div className="section-header center">
+          <span className="section-eyebrow">06. Get in Touch</span>
+          <h2 className="section-title">Contact</h2>
         </div>
       </motion.div>
 
@@ -55,7 +55,7 @@ export default function Contact() {
           </p>
           <div className="space-y-4">
             {[
-              { icon: '📧', label: 'Email', value: 'shashankng626@gmail.com', href: 'mailto:shashankng626@gmail.com' },
+              { icon: '✉️', label: 'Email', value: 'shashankng626@gmail.com', href: 'mailto:shashankng626@gmail.com' },
               { icon: '💼', label: 'LinkedIn', value: 'Shashank Naik', href: 'https://www.linkedin.com/in/shashank-naik-6b449428a' },
               { icon: '🐙', label: 'GitHub', value: 'ShashankGanapatiNaik', href: 'https://github.com/ShashankGanapatiNaik' },
             ].map(item => (
@@ -64,7 +64,7 @@ export default function Contact() {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl border border-lightest-navy hover:border-accent/40 hover:bg-accent/5 transition-all group"
+                className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-border-accent transition-all group"
               >
                 <span className="text-xl">{item.icon}</span>
                 <div>
@@ -116,8 +116,6 @@ export default function Contact() {
           <motion.button
             type="submit"
             disabled={loading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
@@ -142,12 +140,40 @@ export default function Contact() {
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: 0.6 }}
-        className="text-center mt-24 pt-8 border-t border-lightest-navy"
+        className="text-center mt-24 pt-8 border-t border-border flex flex-col items-center gap-4"
       >
-        <p className="font-mono text-xs text-slate">
-          Designed & Built by{' '}
-          <span className="text-accent">Shashank Ganapati Naik</span>
-          {' '}• {new Date().getFullYear()}
+        <div className="flex items-center gap-6">
+          <a
+            href="https://github.com/ShashankGanapatiNaik"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate hover:text-accent transition-colors"
+            title="GitHub"
+            style={{ fontSize: "18px" }}
+          >
+            🐙
+          </a>
+          <a
+            href="https://www.linkedin.com/in/shashank-naik-6b449428a"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate hover:text-accent transition-colors"
+            title="LinkedIn"
+            style={{ fontSize: "18px" }}
+          >
+            💼
+          </a>
+          <a
+            href="mailto:shashankng626@gmail.com"
+            className="text-slate hover:text-accent transition-colors"
+            title="Email"
+            style={{ fontSize: "18px" }}
+          >
+            ✉️
+          </a>
+        </div>
+        <p className="font-mono text-[13px] text-slate">
+          © {new Date().getFullYear()} Shashank Ganapati Naik. All rights reserved.
         </p>
       </motion.div>
     </section>

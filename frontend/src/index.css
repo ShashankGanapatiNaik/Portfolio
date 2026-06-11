@@ -2,41 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── DARK THEME (default) ── */
+/* ── THEME DESIGN SYSTEM ── */
+
 :root,
 .dark-theme {
-  --bg-primary: #0a192f;
-  --bg-secondary: #112240;
-  --bg-tertiary: #233554;
-  --text-primary: #ccd6f6;
-  --text-secondary: #8892b0;
-  --text-light: #a8b2d8;
-  --accent: #64ffda;
-  --accent-tint: rgba(100, 255, 218, 0.1);
-  --accent-dark: #0d9488;
-  --border: #233554;
-  --border-accent: rgba(100, 255, 218, 0.3);
-  --shadow: rgba(0, 0, 0, 0.3);
-  --navbar-bg: rgba(10, 25, 47, 0.92);
-  --card-hover: rgba(100, 255, 218, 0.05);
+  /* Colors as RGB coordinates for Tailwind opacity utilities */
+  --bg-primary-rgb: 0, 0, 0;
+  --bg-secondary-rgb: 10, 10, 10;
+  --bg-tertiary-rgb: 23, 23, 23;
+  --text-primary-rgb: 245, 245, 245;
+  --text-secondary-rgb: 163, 163, 163;
+  --text-light-rgb: 115, 115, 115;
+  --accent-rgb: 245, 245, 245;
+  --border-rgb: 38, 38, 38;
+  --border-accent-rgb: 82, 82, 82;
+
+  /* Standard CSS variables */
+  --bg-primary: rgb(var(--bg-primary-rgb));
+  --bg-secondary: rgb(var(--bg-secondary-rgb));
+  --bg-tertiary: rgb(var(--bg-tertiary-rgb));
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-secondary: rgb(var(--text-secondary-rgb));
+  --text-light: rgb(var(--text-light-rgb));
+  --accent: rgb(var(--accent-rgb));
+  /* 8% lighter/darker accent-tint transitions */
+  --accent-tint: rgba(var(--accent-rgb), 0.08);
+  --accent-tint-hover: rgba(var(--accent-rgb), 0.16);
+  --accent-dark: #ffffff;
+  --border: rgb(var(--border-rgb));
+  --border-accent: rgb(var(--border-accent-rgb));
+  --shadow: rgba(0, 0, 0, 0);
+  --navbar-bg: rgba(var(--bg-primary-rgb), 0.85);
+  --navbar-border: rgba(255, 255, 255, 0.08);
+  --card-hover: rgba(var(--text-primary-rgb), 0.01);
+  --scrollbar-thumb: #444444;
+  
+  /* Selection colors */
+  --selection-bg: #f5f5f5;
+  --selection-text: #000000;
+
+  /* Font variables */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
-/* ── LIGHT THEME ── */
 .light-theme {
-  --bg-primary: #f0f7ff;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #e2edf8;
-  --text-primary: #0f2a4a;
-  --text-secondary: #4a6280;
-  --text-light: #2d5078;
-  --accent: #0d9488;
-  --accent-tint: rgba(13, 148, 136, 0.1);
-  --accent-dark: #0f766e;
-  --border: #c8dcea;
-  --border-accent: rgba(13, 148, 136, 0.4);
-  --shadow: rgba(0, 0, 0, 0.08);
-  --navbar-bg: rgba(240, 247, 255, 0.92);
-  --card-hover: rgba(13, 148, 136, 0.05);
+  /* Colors as RGB coordinates */
+  --bg-primary-rgb: 255, 255, 255;
+  --bg-secondary-rgb: 250, 250, 250;
+  --bg-tertiary-rgb: 245, 245, 245;
+  --text-primary-rgb: 17, 17, 17;
+  --text-secondary-rgb: 82, 82, 82;
+  --text-light-rgb: 115, 115, 115;
+  --accent-rgb: 17, 17, 17;
+  --border-rgb: 229, 231, 235;
+  --border-accent-rgb: 163, 163, 163;
+
+  /* Standard CSS variables */
+  --bg-primary: rgb(var(--bg-primary-rgb));
+  --bg-secondary: rgb(var(--bg-secondary-rgb));
+  --bg-tertiary: rgb(var(--bg-tertiary-rgb));
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-secondary: rgb(var(--text-secondary-rgb));
+  --text-light: rgb(var(--text-light-rgb));
+  --accent: rgb(var(--accent-rgb));
+  /* 8% lighter/darker accent-tint transitions */
+  --accent-tint: rgba(var(--accent-rgb), 0.06);
+  --accent-tint-hover: rgba(var(--accent-rgb), 0.12);
+  --accent-dark: #000000;
+  --border: rgb(var(--border-rgb));
+  --border-accent: rgb(var(--border-accent-rgb));
+  --shadow: rgba(0, 0, 0, 0);
+  --navbar-bg: rgba(var(--bg-primary-rgb), 0.88);
+  --navbar-border: rgba(0, 0, 0, 0.08);
+  --card-hover: rgba(var(--text-primary-rgb), 0.01);
+  --scrollbar-thumb: #cccccc;
+
+  /* Selection colors */
+  --selection-bg: #111111;
+  --selection-text: #ffffff;
 }
 
 @layer base {
@@ -52,73 +96,135 @@
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    font-family: "DM Sans", sans-serif;
+    font-family: var(--font-sans);
     overflow-x: hidden;
     transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
+      background-color 0.2s ease,
+      color 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
+  /* 9. Selection Color */
   ::selection {
-    background-color: var(--accent-tint);
-    color: var(--accent);
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
   }
 
+  /* 8. Scrollbar Details */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--bg-tertiary);
-    border-radius: 4px;
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-tint);
+    background: var(--border-accent);
+  }
+
+  /* 10. Focus States */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  a:focus, button:focus, input:focus, textarea:focus {
+    outline: none;
   }
 }
 
 @layer components {
   .section-container {
-    max-width: 72rem;
+    max-width: 68rem;
     margin-left: auto;
     margin-right: auto;
-    padding: 6rem 1.5rem;
+    padding: 6.5rem 2rem;
   }
 
+  /* 1. Typographic Refinement - tight headings & balanced wrap */
   .section-title {
-    font-family: "Syne", sans-serif;
-    font-size: clamp(1.875rem, 4vw, 2.25rem);
-    font-weight: 700;
+    font-family: "Inter", sans-serif;
+    font-size: clamp(1.75rem, 3.5vw, 2.125rem); /* 28-34px */
+    font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+    text-wrap: balance;
   }
 
-  .section-subtitle-line {
+  /* 4. Section Rhythm: small quiet eyebrow label above title */
+  .section-header {
+    margin-bottom: 3.5rem;
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .section-header.center {
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 4rem;
+    text-align: center;
+  }
+  .section-header.left {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    color: var(--text-light);
+    text-transform: none; /* small and quiet, not uppercase */
   }
 
   .accent-line {
-    height: 1px;
-    background-color: var(--border);
-    flex: 1;
+    display: none; /* remove AI-template bar lines next to titles */
   }
 
+  /* 4. Section Rhythm - thin horizontal rule */
+  .section-divider {
+    border: 0;
+    height: 1px;
+    background-color: var(--border);
+    opacity: 0.1;
+    max-width: 68rem;
+    margin: 0 auto;
+  }
+
+  /* 1. Typographic Refinement - Paragraph line-height & max-width */
+  p {
+    line-height: 1.72; /* 1.7 - 1.75 */
+  }
+  .section-container p {
+    max-width: 65ch; /* prevent layout stretching */
+  }
+  /* Reset max-width on smaller UI blocks */
+  .card p, 
+  .input-field, 
+  form p, 
+  .chatbot p, 
+  footer p,
+  .tag p,
+  table p {
+    max-width: none !important;
+  }
+
+  /* 2. Micro-interactions - clean background shift only */
   .btn-primary {
-    padding: 0.75rem 1.5rem;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: "JetBrains Mono", monospace;
+    padding: 0.625rem 1.25rem;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: "Inter", sans-serif;
     font-size: 0.875rem;
-    border-radius: 0.25rem;
-    background-color: transparent;
-    transition:
-      background-color 0.3s,
-      transform 0.2s;
+    font-weight: 500;
+    border-radius: 6px;
+    background-color: var(--bg-secondary);
+    transition: background-color 150ms ease, border-color 150ms ease;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -126,19 +232,20 @@
     text-decoration: none;
   }
   .btn-primary:hover {
-    background-color: var(--accent-tint);
+    background-color: var(--accent-tint-hover);
+    border-color: var(--border-accent);
   }
 
   .btn-filled {
-    padding: 0.75rem 1.5rem;
+    padding: 0.625rem 1.25rem;
     background-color: var(--accent);
     color: var(--bg-primary);
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Inter", sans-serif;
     font-size: 0.875rem;
-    font-weight: 700;
-    border-radius: 0.25rem;
-    border: none;
-    transition: opacity 0.3s;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    transition: opacity 150ms ease, background-color 150ms ease;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -146,73 +253,102 @@
     text-decoration: none;
   }
   .btn-filled:hover {
-    opacity: 0.85;
+    background-color: var(--accent-dark);
+    opacity: 0.92;
   }
 
+  /* 5. Project Cards Second Pass - border only, no shadow */
   .card {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    transition:
-      border-color 0.3s,
-      transform 0.3s,
-      box-shadow 0.3s;
+    border-radius: 8px;
+    padding: 1.75rem;
+    transition: border-color 150ms ease;
+    box-shadow: none !important; /* remove shadow completely */
   }
   .card:hover {
-    border-color: var(--border-accent);
-    box-shadow: 0 4px 20px var(--shadow);
+    border-color: var(--border-accent) !important;
+    background-color: var(--bg-secondary);
+    box-shadow: none !important;
   }
 
+  /* 2. Micro-interactions - Nav underline left slide-in */
   .nav-link {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Inter", sans-serif;
     font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-secondary);
-    transition: color 0.2s;
+    transition: color 150ms ease;
     cursor: pointer;
     text-decoration: none;
+    position: relative;
+    padding-bottom: 4px;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--text-primary);
+    transition: width 200ms ease;
   }
   .nav-link:hover {
-    color: var(--accent);
+    color: var(--text-primary);
+  }
+  .nav-link:hover::after {
+    width: 100%;
+  }
+  
+  /* 2. Micro-interactions - Active nav item bottom border */
+  .nav-link.active::after {
+    width: 100%;
+    height: 2px;
   }
 
   .input-field {
     width: 100%;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
     color: var(--text-primary);
-    font-family: "DM Sans", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.875rem;
-    transition:
-      border-color 0.2s,
-      box-shadow 0.2s;
+    transition: border-color 150ms ease;
     outline: none;
   }
   .input-field::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-light);
   }
   .input-field:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent-tint);
+    border-color: var(--border-accent);
+    box-shadow: none;
   }
 
+  /* 6. Skills / Tags - Border only tag style */
   .tag {
-    padding: 0.25rem 0.75rem;
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-accent);
-    color: var(--accent);
-    font-family: "JetBrains Mono", monospace;
-    font-size: 0.75rem;
-    border-radius: 9999px;
+    padding: 4px 10px; /* 4px 10px tag padding */
+    background-color: transparent; /* border-only, no background fill */
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: "Inter", sans-serif;
+    font-size: 13px; /* 13px tag text */
+    font-weight: 500; /* 500 font weight */
+    border-radius: 4px; /* rounded rect corners (not pills) */
     display: inline-block;
+    transition: border-color 150ms ease, color 150ms ease;
+  }
+  .tag:hover {
+    border-color: var(--border-accent);
+    color: var(--text-primary);
   }
 
   .skeleton {
     animation: skeletonPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     background-color: var(--bg-tertiary);
-    border-radius: 0.25rem;
+    border-radius: 6px;
   }
   @keyframes skeletonPulse {
     0%,
@@ -220,7 +356,7 @@
       opacity: 1;
     }
     50% {
-      opacity: 0.5;
+      opacity: 0.4;
     }
   }
 }
@@ -254,60 +390,40 @@
     background-color: var(--accent-tint);
   }
   .font-display {
-    font-family: "Syne", sans-serif;
+    font-family: var(--font-sans);
+    letter-spacing: -0.4px;
   }
   .font-body {
-    font-family: "DM Sans", sans-serif;
+    font-family: var(--font-sans);
   }
   .font-mono {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
   }
   .glow-text {
-    text-shadow: 0 0 20px var(--accent-tint);
+    text-shadow: none;
   }
 }
 
-/* ── Animated gradient ── */
+/* ── Clear background (remove gradients/grids) ── */
 .animated-gradient {
-  background: linear-gradient(
-    -45deg,
-    var(--bg-primary),
-    var(--bg-secondary),
-    var(--bg-primary),
-    var(--bg-secondary)
-  );
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
-}
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  background-color: var(--bg-primary) !important;
+  background-image: none !important;
+  animation: none !important;
 }
 
-/* ── Grid overlay ── */
 .grid-bg {
-  background-image:
-    linear-gradient(var(--accent-tint) 1px, transparent 1px),
-    linear-gradient(90deg, var(--accent-tint) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.3;
-}
-.grid-bg-wrap {
   position: relative;
+}
+.grid-bg::before {
+  display: none !important;
 }
 
 /* ── Typing cursor ── */
 .typing-cursor::after {
   content: "|";
   animation: blink 1s step-end infinite;
-  color: var(--accent);
+  color: var(--text-primary);
+  font-weight: 400;
 }
 @keyframes blink {
   0%,
@@ -319,46 +435,27 @@
   }
 }
 
-/* ── Spin ── */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ── Glow ── */
-@keyframes glow {
-  0% {
-    box-shadow: 0 0 5px var(--accent);
-  }
-  100% {
-    box-shadow:
-      0 0 20px var(--accent),
-      0 0 40px var(--accent-tint);
-  }
-}
-
-/* ── Mobile ── */
+/* ── Mobile padding overrides ── */
 @media (max-width: 480px) {
   .section-container {
     padding-top: 5rem;
     padding-bottom: 2rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
 }
 
-/* ── Light theme specific overrides ── */
+/* ── Remove specific light theme overrides that are no longer needed ── */
 .light-theme .animated-gradient {
-  background: linear-gradient(-45deg, #f0f7ff, #e2edf8, #f0f7ff, #dbeeff);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: var(--bg-primary) !important;
+  animation: none !important;
 }
 
 .light-theme .card {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: none !important;
 }
 
 .light-theme .card:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: none !important;
+  border-color: var(--border-accent) !important;
 }

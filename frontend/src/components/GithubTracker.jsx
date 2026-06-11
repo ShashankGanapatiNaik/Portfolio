@@ -44,9 +44,9 @@ export default function GithubTracker() {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
       >
-        <div className="section-subtitle-line">
-          <h2 className="section-title whitespace-nowrap">GitHub Activity</h2>
-          <div className="accent-line" />
+        <div className="section-header left">
+          <span className="section-eyebrow">05. Open Source</span>
+          <h2 className="section-title">GitHub Activity</h2>
         </div>
       </motion.div>
 
@@ -77,8 +77,7 @@ export default function GithubTracker() {
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.1 * i + 0.3 }}
                 whileHover={{
-                  scale: 1.05,
-                  borderColor: "rgba(100,255,218,0.4)",
+                  borderColor: "var(--border-accent)",
                 }}
                 className="card text-center py-5"
               >
@@ -113,22 +112,22 @@ export default function GithubTracker() {
                     <XAxis
                       dataKey="lang"
                       tick={{
-                        fill: "#8892b0",
+                        fill: "var(--text-secondary)",
                         fontSize: 11,
-                        fontFamily: "JetBrains Mono",
+                        fontFamily: "var(--font-mono)",
                       }}
                     />
-                    <YAxis tick={{ fill: "#8892b0", fontSize: 11 }} />
+                    <YAxis tick={{ fill: "var(--text-secondary)", fontSize: 11 }} />
                     <Tooltip
                       contentStyle={{
-                        background: "#112240",
-                        border: "1px solid #233554",
-                        borderRadius: "8px",
-                        color: "#ccd6f6",
+                        background: "var(--bg-secondary)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "6px",
+                        color: "var(--text-primary)",
                         fontFamily: "JetBrains Mono",
                         fontSize: 12,
                       }}
-                      cursor={{ fill: "rgba(100,255,218,0.05)" }}
+                      cursor={{ fill: "rgba(var(--accent-rgb), 0.05)" }}
                     />
                     <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                       {data.topLanguages?.map((entry, i) => (
@@ -159,8 +158,8 @@ export default function GithubTracker() {
                   href={repo.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ x: 4 }}
-                  className="flex items-center justify-between bg-light-navy border border-lightest-navy rounded-lg px-4 py-3 hover:border-accent/30 transition-all block"
+                  whileHover={{ borderColor: "var(--border-accent)" }}
+                  className="flex items-center justify-between card px-4 py-3 transition-all block"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-lightest-slate text-sm font-medium truncate">

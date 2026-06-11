@@ -154,7 +154,7 @@ export default function Hero() {
         }}
       />
 
-      <div className="section-container w-full pt-32 pb-16">
+      <div className="section-container" style={{ paddingTop: "8rem", paddingBottom: "4rem" }}>
         {/* Two column layout: text LEFT, photo RIGHT — always side by side */}
         <div
           style={{
@@ -211,10 +211,9 @@ export default function Hero() {
             >
               <motion.button
                 whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0 0 20px rgba(100,255,218,0.3)",
+                  scale: 1.02,
                 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setShowModal(true);
                   setStep("form");
@@ -238,8 +237,8 @@ export default function Hero() {
               </motion.button>
               <motion.a
                 href="#projects"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="btn-filled"
               >
                 View Projects →
@@ -308,39 +307,25 @@ export default function Hero() {
               justifyContent: "center",
             }}
           >
-            <div style={{ position: "relative" }}>
-              {/* Spinning gradient ring */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: "-4px",
-                  borderRadius: "50%",
-                  background:
-                    "conic-gradient(from 0deg, #64ffda, #0d9488, #112240, #64ffda)",
-                  animation: "spin 6s linear infinite",
-                  zIndex: 0,
-                }}
-              />
-              {/* White gap ring */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: "-1px",
-                  borderRadius: "50%",
-                  background: "#0a192f",
-                  zIndex: 1,
-                }}
-              />
+            <div
+              style={{
+                position: "relative",
+                width: "clamp(160px, 25vw, 300px)",
+                height: "clamp(160px, 25vw, 300px)",
+                borderRadius: "50%",
+                border: "1px solid var(--border)",
+                padding: "6px",
+                background: "var(--bg-secondary)",
+              }}
+            >
               {/* Photo */}
               <div
                 style={{
-                  position: "relative",
-                  width: "clamp(160px, 25vw, 300px)",
-                  height: "clamp(160px, 25vw, 300px)",
+                  width: "100%",
+                  height: "100%",
                   borderRadius: "50%",
                   overflow: "hidden",
-                  zIndex: 2,
-                  background: "#112240",
+                  background: "var(--bg-tertiary)",
                 }}
               >
                 <img
@@ -355,7 +340,7 @@ export default function Hero() {
                   onError={(e) => {
                     e.target.style.display = "none";
                     e.target.parentNode.innerHTML =
-                      '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#112240,#233554);"><span style="font-family:Syne,sans-serif;font-size:5rem;font-weight:800;color:#64ffda;">SN</span></div>';
+                      '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);"><span style="font-family:Inter,sans-serif;font-size:3.5rem;font-weight:700;color:var(--text-primary);">SN</span></div>';
                   }}
                 />
               </div>
@@ -377,7 +362,7 @@ export default function Hero() {
           transition={{ duration: 1.5, repeat: Infinity }}
           className="w-0.5 h-8"
           style={{
-            background: "linear-gradient(to bottom, #64ffda, transparent)",
+            background: "linear-gradient(to bottom, var(--accent), transparent)",
           }}
         />
       </motion.div>
@@ -394,7 +379,7 @@ export default function Hero() {
             }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{
-              backgroundColor: "rgba(10,25,47,0.88)",
+              backgroundColor: "var(--navbar-bg)",
               backdropFilter: "blur(8px)",
             }}
           >
@@ -404,9 +389,9 @@ export default function Hero() {
               exit={{ opacity: 0, scale: 0.85, y: 24 }}
               transition={{ type: "spring", stiffness: 300, damping: 26 }}
               style={{
-                backgroundColor: "#112240",
-                border: "1px solid #233554",
-                borderRadius: "1rem",
+                backgroundColor: "var(--bg-secondary)",
+                border: "1px solid var(--border)",
+                borderRadius: "0.5rem",
                 padding: "2rem",
                 width: "100%",
                 maxWidth: "440px",
@@ -421,8 +406,8 @@ export default function Hero() {
                         width: 56,
                         height: 56,
                         borderRadius: "50%",
-                        background: "rgba(100,255,218,0.1)",
-                        border: "1px solid rgba(100,255,218,0.3)",
+                        background: "var(--accent-tint)",
+                        border: "1px solid var(--border-accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -499,7 +484,7 @@ export default function Hero() {
 
                   <p
                     className="font-mono text-xs text-center mb-5"
-                    style={{ color: "#8892b0" }}
+                    style={{ color: "var(--text-secondary)" }}
                   >
                     📬 Your request will be sent to Shashank's Gmail for
                     approval
@@ -511,10 +496,10 @@ export default function Hero() {
                       style={{
                         flex: 1,
                         padding: "0.75rem",
-                        border: "1px solid #233554",
-                        borderRadius: "0.5rem",
-                        color: "#8892b0",
-                        fontFamily: "JetBrains Mono, monospace",
+                        border: "1px solid var(--border)",
+                        borderRadius: "0.375rem",
+                        color: "var(--text-secondary)",
+                        fontFamily: "var(--font-mono)",
                         fontSize: "0.875rem",
                         backgroundColor: "transparent",
                         cursor: "pointer",
@@ -530,12 +515,12 @@ export default function Hero() {
                       style={{
                         flex: 1,
                         padding: "0.75rem",
-                        border: "1px solid #64ffda",
-                        borderRadius: "0.5rem",
-                        color: "#64ffda",
-                        fontFamily: "JetBrains Mono, monospace",
+                        border: "1px solid var(--border-accent)",
+                        borderRadius: "0.375rem",
+                        color: "var(--text-primary)",
+                        fontFamily: "var(--font-mono)",
                         fontSize: "0.875rem",
-                        backgroundColor: "rgba(100,255,218,0.1)",
+                        backgroundColor: "var(--accent-tint)",
                         cursor: loading ? "not-allowed" : "pointer",
                         opacity: loading ? 0.6 : 1,
                         display: "flex",
@@ -550,8 +535,8 @@ export default function Hero() {
                             style={{
                               width: 14,
                               height: 14,
-                              border: "2px solid rgba(100,255,218,0.3)",
-                              borderTopColor: "#64ffda",
+                              border: "2px solid var(--border)",
+                              borderTopColor: "var(--accent)",
                               borderRadius: "50%",
                               animation: "spin 0.8s linear infinite",
                             }}
@@ -581,8 +566,8 @@ export default function Hero() {
                         width: 56,
                         height: 56,
                         borderRadius: "50%",
-                        border: "2px solid #233554",
-                        borderTopColor: "#64ffda",
+                        border: "2px solid var(--border)",
+                        borderTopColor: "var(--accent)",
                       }}
                     />
                   </div>
@@ -598,9 +583,9 @@ export default function Hero() {
                   </p>
                   <div
                     style={{
-                      background: "rgba(100,255,218,0.05)",
-                      border: "1px solid rgba(100,255,218,0.15)",
-                      borderRadius: "0.75rem",
+                      background: "var(--accent-tint)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "0.375rem",
                       padding: "1rem",
                       marginBottom: "1.5rem",
                     }}
@@ -616,10 +601,10 @@ export default function Hero() {
                     onClick={handleClose}
                     style={{
                       padding: "0.5rem 1.5rem",
-                      border: "1px solid #233554",
+                      border: "1px solid var(--border)",
                       borderRadius: "0.5rem",
-                      color: "#8892b0",
-                      fontFamily: "JetBrains Mono, monospace",
+                      color: "var(--text-secondary)",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "0.8rem",
                       backgroundColor: "transparent",
                       cursor: "pointer",
@@ -642,8 +627,8 @@ export default function Hero() {
                         width: 64,
                         height: 64,
                         borderRadius: "50%",
-                        background: "rgba(100,255,218,0.15)",
-                        border: "2px solid #64ffda",
+                        background: "var(--accent-tint)",
+                        border: "2px solid var(--border-accent)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -661,19 +646,19 @@ export default function Hero() {
                     resume.
                   </p>
                   <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleDownload}
                     style={{
                       width: "100%",
                       padding: "0.875rem",
-                      background: "#64ffda",
-                      color: "#0a192f",
+                      background: "var(--accent)",
+                      color: "var(--bg-primary)",
                       border: "none",
-                      borderRadius: "0.5rem",
-                      fontFamily: "JetBrains Mono, monospace",
+                      borderRadius: "0.375rem",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "0.95rem",
-                      fontWeight: "bold",
+                      fontWeight: "500",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
