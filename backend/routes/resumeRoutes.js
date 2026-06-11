@@ -14,11 +14,28 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // ── Email sender — tries multiple methods ─────────────────────────────────────
+let gmailTransporter = null;
+
 const sendEmail = async ({ to, subject, html }) => {
   const errors = [];
+  const provider = (process.env.EMAIL_PROVIDER || "auto").toLowerCase();
 
-  // Method 1: Resend with verified domain
-  if (process.env.RESEND_API_KEY) {
+  const tryResend = async () => {
+    if (!process.env.RESEND_API_KEY) return false;
+
+    // Safety Sandbox Check:
+    // If we don't have a verified custom domain, we are in sandbox/testing mode.
+    // In sandbox mode, Resend ONLY allows sending to the registered account email.
+    // If we try sending to a different recipient, it will fail immediately with 403 validation error.
+    const isSandbox = !process.env.RESEND_FROM_EMAIL || process.env.RESEND_FROM_EMAIL.includes("onboarding@resend.dev");
+    const allowedSandboxRecipient = process.env.GMAIL_USER || process.env.ADMIN_EMAIL;
+    if (isSandbox && allowedSandboxRecipient && to.toLowerCase() !== allowedSandboxRecipient.toLowerCase()) {
+      const skipMsg = `Recipient ${to} not allowed in Resend sandbox mode (can only send to ${allowedSandboxRecipient}). Skipping Resend.`;
+      console.log(`ℹ️ ${skipMsg}`);
+      errors.push("Resend: " + skipMsg);
+      return false;
+    }
+
     try {
       const fromAddress = process.env.RESEND_FROM_EMAIL
         ? `Shashank Portfolio <${process.env.RESEND_FROM_EMAIL}>`
@@ -36,43 +53,60 @@ const sendEmail = async ({ to, subject, html }) => {
         },
       );
       console.log("✅ Email sent via Resend. ID:", res.data?.id);
-      return;
+      return true;
     } catch (err) {
       const msg = JSON.stringify(err.response?.data || err.message);
       console.error("❌ Resend failed:", msg);
       errors.push("Resend: " + msg);
+      return false;
     }
-  }
+  };
 
-  // Method 2: Gmail SMTP via nodemailer
-  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  const tryGmail = async () => {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return false;
     try {
-      const nodemailer = require("nodemailer");
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        requireTLS: true,
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_APP_PASSWORD,
-        },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 10000,
-        socketTimeout: 10000,
-      });
-      await transporter.sendMail({
+      if (!gmailTransporter) {
+        const nodemailer = require("nodemailer");
+        gmailTransporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false,
+          requireTLS: true,
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_APP_PASSWORD,
+          },
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 10000,
+          socketTimeout: 10000,
+        });
+      }
+      await gmailTransporter.sendMail({
         from: `"Shashank Portfolio" <${process.env.GMAIL_USER}>`,
         to,
         subject,
         html,
       });
       console.log("✅ Email sent via Gmail SMTP to:", to);
-      return;
+      return true;
     } catch (err) {
       console.error("❌ Gmail SMTP failed:", err.message);
       errors.push("Gmail: " + err.message);
+      return false;
     }
+  };
+
+  // Determine priority/execution order
+  if (provider === "gmail" || provider === "smtp") {
+    if (await tryGmail()) return;
+    if (await tryResend()) return;
+  } else if (provider === "resend") {
+    if (await tryResend()) return;
+    if (await tryGmail()) return;
+  } else {
+    // "auto" (default): try Resend first, fallback to Gmail
+    if (await tryResend()) return;
+    if (await tryGmail()) return;
   }
 
   throw new Error("All email methods failed: " + errors.join(" | "));
@@ -102,7 +136,7 @@ router.post("/request", async (req, res) => {
     const downloadUrl = `${BACKEND_URL}/api/resume/download/${token}`;
 
     await sendEmail({
-      to: process.env.ADMIN_EMAIL || process.env.GMAIL_USER,
+      to: process.env.GMAIL_USER || process.env.ADMIN_EMAIL,
       subject: `📄 Resume Request from ${name}`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a192f;color:#ccd6f6;padding:32px;border-radius:12px;">
