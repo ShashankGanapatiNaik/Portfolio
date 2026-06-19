@@ -43,6 +43,20 @@ export default function ResumeApprove() {
     run();
   }, [token, action]);
 
+  // Auto-close window after successful action
+  useEffect(() => {
+    if (status === "approved" || status === "rejected") {
+      const timer = setTimeout(() => {
+        try {
+          window.close();
+        } catch (err) {
+          console.error("Auto-close failed:", err);
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   const config = {
     loading: {
       icon: "⏳",
@@ -52,29 +66,29 @@ export default function ResumeApprove() {
     },
     approved: {
       icon: "✅",
-      title: "Resume Approved!",
+      title: "Approved Successfully!",
       color: "#64ffda",
       msg: data?.emailSent
-        ? `Download link has been sent to ${data?.email}.`
-        : `Approval recorded. ${data?.emailError ? "Email delivery failed — share the link manually." : ""}`,
+        ? `Request approved. Download link sent to ${data?.email}. This window will close shortly.`
+        : `Request approved. ${data?.emailError ? "Note: email failed to send, but status is updated." : ""} This window will close shortly.`,
     },
     rejected: {
       icon: "❌",
-      title: "Request Rejected",
+      title: "Rejected Successfully!",
       color: "#ff6b6b",
-      msg: `The resume request has been rejected.`,
+      msg: `The request has been rejected. This window will close shortly.`,
     },
     expired: {
       icon: "⏰",
       title: "Link Expired",
       color: "#ffa116",
-      msg: "This approval link has expired (24h limit). Ask the visitor to submit a new request.",
+      msg: "This approval link has expired (24h limit).",
     },
     already_done: {
       icon: "ℹ️",
       title: "Already Processed",
       color: "#8892b0",
-      msg: "This request has already been approved or rejected.",
+      msg: "This request has already been approved or rejected. You can close this window.",
     },
     error: {
       icon: "⚠️",
@@ -133,44 +147,6 @@ export default function ResumeApprove() {
         <p style={{ color: "#8892b0", lineHeight: "1.7", margin: "0 0 24px" }}>
           {c.msg}
         </p>
-
-        {/* Show download link if available and email failed */}
-        {status === "approved" && data?.downloadUrl && !data?.emailSent && (
-          <div
-            style={{
-              background: "#0a192f",
-              border: "1px solid #64ffda33",
-              borderRadius: "8px",
-              padding: "14px",
-              marginBottom: "24px",
-              wordBreak: "break-all",
-              fontSize: "12px",
-              color: "#64ffda",
-              textAlign: "left",
-            }}
-          >
-            {data.downloadUrl}
-          </div>
-        )}
-
-        {status === "approved" && data?.downloadUrl && !data?.emailSent && (
-          <a
-            href={data.downloadUrl}
-            style={{
-              display: "inline-block",
-              padding: "12px 28px",
-              background: "#64ffda",
-              color: "#0a192f",
-              textDecoration: "none",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              fontSize: "14px",
-              marginBottom: "24px",
-            }}
-          >
-            📄 Download Resume
-          </a>
-        )}
 
         <br />
         <a
