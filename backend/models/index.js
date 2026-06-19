@@ -87,11 +87,26 @@ const adminSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// ─── Resume Request Model ─────────────────────────────────────────────────────
+// Persists approval tokens in DB so they survive server restarts
+const resumeRequestSchema = new mongoose.Schema({
+  token:       { type: String, required: true, unique: true },
+  name:        { type: String, required: true },
+  email:       { type: String, required: true },
+  reason:      { type: String, default: "Not specified" },
+  approved:    { type: Boolean, default: false },
+  expiresAt:   { type: Date, required: true },
+  requestedAt: { type: Date, default: Date.now },
+});
+// Auto-delete expired documents from MongoDB
+resumeRequestSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 module.exports = {
-  Project: mongoose.model("Project", projectSchema),
-  Skill: mongoose.model("Skill", skillSchema),
-  Resume: mongoose.model("Resume", resumeSchema),
-  Contact: mongoose.model("Contact", contactSchema),
-  Profile: mongoose.model("Profile", profileSchema),
-  Admin: mongoose.model("Admin", adminSchema),
+  Project:       mongoose.model("Project", projectSchema),
+  Skill:         mongoose.model("Skill", skillSchema),
+  Resume:        mongoose.model("Resume", resumeSchema),
+  Contact:       mongoose.model("Contact", contactSchema),
+  Profile:       mongoose.model("Profile", profileSchema),
+  Admin:         mongoose.model("Admin", adminSchema),
+  ResumeRequest: mongoose.model("ResumeRequest", resumeRequestSchema),
 };

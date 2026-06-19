@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "./context/ThemeContext";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import ResumeApprove from "./pages/ResumeApprove";
 
 function App() {
   return (
@@ -28,6 +29,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/resume/approve/:token" element={<ResumeApprove />} />
+          <Route path="/resume/reject/:token" element={<ResumeApprove />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
