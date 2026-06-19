@@ -78,6 +78,8 @@ const sendEmail = async ({ to, subject, html }) => {
           tls: { rejectUnauthorized: false },
           connectionTimeout: 10000,
           socketTimeout: 10000,
+          debug: true,
+          logger: true,
         });
       }
       await gmailTransporter.sendMail({
@@ -196,10 +198,15 @@ router.get("/approve/:token", async (req, res) => {
     request.approved = true;
     await request.save();
 
-    // Determine the backend URL dynamically (respecting trust proxy setup for protocol)
-    const host = req.get("host");
-    const protocol = req.protocol;
-    const currentBackendUrl = `${protocol}://${host}`;
+    // Use BACKEND_URL env var (set in Render dashboard) as the authoritative source.
+    // Fallback: reconstruct from request headers (trust proxy must be enabled).
+    let currentBackendUrl = BACKEND_URL.replace(/\/$/, "");
+    if (!currentBackendUrl || currentBackendUrl.includes("localhost")) {
+      // Running locally or BACKEND_URL not set in production — use request headers
+      const host = req.get("host");
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      currentBackendUrl = `${protocol}://${host}`;
+    }
     const downloadUrl = `${currentBackendUrl}/api/resume/download/${req.params.token}`;
 
     // Send download link to the user
