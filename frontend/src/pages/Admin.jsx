@@ -206,8 +206,9 @@ export default function Admin() {
     try {
       await uploadResume(fd);
       toast.success("Resume uploaded!");
-    } catch {
-      toast.error("Upload failed");
+    } catch (err) {
+      const errMsg = err.response?.data?.error || err.message || "Upload failed";
+      toast.error(`Upload failed: ${errMsg}`);
     }
   };
 
@@ -229,8 +230,9 @@ export default function Admin() {
         "img[src={`${API_BASE}/profile/photo`}]",
       );
       if (img) img.src = `/api/profile/photo?t=${Date.now()}`;
-    } catch {
-      toast.error("Photo upload failed");
+    } catch (err) {
+      const errMsg = err.response?.data?.error || err.message || "Photo upload failed";
+      toast.error(`Photo upload failed: ${errMsg}`);
     }
   };
 
