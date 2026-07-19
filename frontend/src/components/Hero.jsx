@@ -295,7 +295,7 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* ── RIGHT: Profile Photo ── */}
+          {/* ── RIGHT: Profile Photo with 3D Flip Animation ── */}
           <motion.div
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
@@ -305,46 +305,102 @@ export default function Hero() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              perspective: "1000px",
             }}
           >
-            <div
+            <motion.div
               style={{
                 position: "relative",
                 width: "clamp(160px, 25vw, 300px)",
                 height: "clamp(160px, 25vw, 300px)",
-                borderRadius: "50%",
-                border: "1px solid var(--border)",
-                padding: "6px",
-                background: "var(--bg-secondary)",
+                transformStyle: "preserve-3d",
+                cursor: "pointer",
               }}
+              whileHover={{ rotateY: 180 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              {/* Photo */}
+              {/* FRONT: The Avatar Image */}
               <div
                 style={{
+                  position: "absolute",
+                  inset: 0,
                   width: "100%",
                   height: "100%",
+                  backfaceVisibility: "hidden",
                   borderRadius: "50%",
-                  overflow: "hidden",
-                  background: "var(--bg-tertiary)",
+                  border: "1px solid var(--border)",
+                  padding: "6px",
+                  background: "var(--bg-secondary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <img
-                  src={`${API_BASE}/profile/photo`}
-                  alt="Shashank Ganapati Naik"
+                <div
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center top",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "var(--bg-tertiary)",
                   }}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.parentNode.innerHTML =
-                      '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);"><span style="font-family:Inter,sans-serif;font-size:3.5rem;font-weight:700;color:var(--text-primary);">SN</span></div>';
-                  }}
-                />
+                >
+                  <img
+                    src={`${API_BASE}/profile/photo`}
+                    alt="Shashank Ganapati Naik"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center top",
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.parentNode.innerHTML =
+                        '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);"><span style="font-family:Outfit,sans-serif;font-size:3.5rem;font-weight:700;color:var(--text-primary);">SN</span></div>';
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+
+              {/* BACK: High-end holographic badge */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  backfaceVisibility: "hidden",
+                  transform: "rotateY(180deg)",
+                  borderRadius: "50%",
+                  border: "2px solid var(--border-accent)",
+                  padding: "16px",
+                  background: "radial-gradient(circle, rgba(16,185,129,0.1) 0%, var(--bg-secondary) 100%)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  boxShadow: "0 0 20px rgba(52, 211, 153, 0.15)",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
+                    fontWeight: "800",
+                    color: "var(--accent)",
+                    letterSpacing: "1px",
+                    fontFamily: "var(--font-sans)",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  SN
+                </span>
+                <div style={{ width: "30px", height: "2px", background: "var(--accent)", margin: "8px 0" }} />
+                <p style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--text-secondary)", textTransform: "uppercase" }}>REVA University</p>
+                <p style={{ fontSize: "11px", color: "var(--text-primary)", fontWeight: "500", marginTop: "4px" }}>Full Stack & AI Engineer</p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>

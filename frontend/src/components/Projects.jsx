@@ -92,7 +92,11 @@ function ProjectCard({ project, index }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, delay: index * 0.1 }}
-      whileHover={{ borderColor: "var(--border-accent)" }}
+      whileHover={{
+        y: -6,
+        borderColor: "var(--border-accent)",
+        boxShadow: "0 12px 30px -10px rgba(52, 211, 153, 0.08)",
+      }}
       className="card flex flex-col h-full group relative overflow-hidden"
     >
       {/* Header — folder icon and featured badge */}

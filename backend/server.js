@@ -45,8 +45,10 @@ const chatLimiter = rateLimit({
 });
 
 // Reject API requests when MongoDB is not connected
+// Exempt routes that don't use the database (GitHub, LeetCode fetch from external APIs)
 app.use("/api", (req, res, next) => {
   if (req.path === "/health") return next();
+  if (req.path.startsWith("/github") || req.path.startsWith("/leetcode")) return next();
   if (!getDbStatus()) {
     return res.status(503).json({
       error: "Service unavailable. MongoDB is not connected.",

@@ -1,40 +1,177 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
-import { getGithubData } from "../services/api";
+import { getGithubData, getGithubContributions } from "../services/api";
 
-const LANG_COLORS = {
-  JavaScript: "#f7df1e",
-  Python: "#3572A5",
-  Java: "#b07219",
-  TypeScript: "#2b7489",
-  HTML: "#e34c26",
-  CSS: "#563d7c",
-  Jupyter: "#DA5B0B",
-  Shell: "#89e051",
-  C: "#555555",
-  Other: "#8892b0",
+const LEVEL_COLORS = {
+  0: "var(--contrib-0)",
+  1: "var(--contrib-1)",
+  2: "var(--contrib-2)",
+  3: "var(--contrib-3)",
+  4: "var(--contrib-4)",
 };
+
+// Only show Mon / Wed / Fri labels (rows 1, 3, 5 of 0-indexed Sun-Sat)
+const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
+
+const CELL = 12;   // px — cell size
+const GAP  = 3;    // px — gap between cells
+const STEP = CELL + GAP; // column/row pitch
+
+function ContributionGrid({ weeks, isInView }) {
+  if (!weeks || weeks.length === 0) return null;
+
+  // ── Month label positions ──────────────────────────────────────────────────
+  // Walk each week; when the first day's month changes, record it.
+  const monthLabels = [];
+  let lastMonth = -1;
+  weeks.forEach((week, wIdx) => {
+    const firstDay = week.contributionDays[0];
+    if (!firstDay) return;
+    const m = new Date(firstDay.date + "T00:00:00").getMonth();
+    if (m !== lastMonth) {
+      monthLabels.push({
+        wIdx,
+        label: new Date(firstDay.date + "T00:00:00").toLocaleString("default", { month: "short" }),
+      });
+      lastMonth = m;
+    }
+  });
+
+  const totalWeeks = weeks.length;
+  const gridWidth  = totalWeeks * STEP - GAP;
+  const gridHeight = 7 * STEP - GAP;
+
+  const DAY_COL_W = 28; // px reserved for Mon/Wed/Fri labels
+  const MONTH_ROW_H = 18; // px reserved for month labels above grid
+
+  return (
+    <div
+      className="contrib-graph"
+      style={{
+        display: "grid",
+        gridTemplateColumns: `${DAY_COL_W}px 1fr`,
+        gridTemplateRows: `${MONTH_ROW_H}px 1fr`,
+        gap: 0,
+      }}
+    >
+      {/* ── Top-left corner (empty) ── */}
+      <div />
+
+      {/* ── Month labels row ── */}
+      <div style={{ position: "relative", height: MONTH_ROW_H }}>
+        {monthLabels.map(({ wIdx, label }) => (
+          <span
+            key={label + wIdx}
+            style={{
+              position: "absolute",
+              left: wIdx * STEP,
+              bottom: 4,
+              fontSize: 11,
+              fontFamily: "var(--font-mono)",
+              color: "var(--text-light)",
+              whiteSpace: "nowrap",
+              lineHeight: 1,
+              userSelect: "none",
+            }}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {/* ── Day-of-week labels ── */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: GAP,
+          paddingTop: 0,
+          width: DAY_COL_W,
+        }}
+      >
+        {DAY_LABELS.map((label, i) => (
+          <div
+            key={i}
+            style={{
+              height: CELL,
+              fontSize: 9,
+              fontFamily: "var(--font-mono)",
+              color: "var(--text-light)",
+              lineHeight: `${CELL}px`,
+              textAlign: "right",
+              paddingRight: 5,
+              userSelect: "none",
+            }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Heatmap cells with staggered flow animation ── */}
+      <div style={{ position: "relative", width: gridWidth, height: gridHeight }}>
+        {weeks.map((week, wIdx) => {
+          // Pad first incomplete week so days start on the correct row
+          const padCount = wIdx === 0 ? 7 - week.contributionDays.length : 0;
+          return (
+            <motion.div
+              key={wIdx}
+              initial={{ opacity: 0, scale: 0.7, y: 5 }}
+              animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
+              transition={{
+                delay: 0.1 + (wIdx * 0.012),
+                duration: 0.35,
+                type: "spring",
+                stiffness: 100,
+                damping: 15
+              }}
+            >
+              {week.contributionDays.map((day, dIdx) => {
+                const row = padCount + dIdx;
+                return (
+                  <div
+                    key={day.date}
+                    title={`${day.date}: ${day.contributionCount} contribution${day.contributionCount !== 1 ? "s" : ""}`}
+                    className="contrib-cell"
+                    style={{
+                      position: "absolute",
+                      left: wIdx * STEP,
+                      top: row * STEP,
+                      width: CELL,
+                      height: CELL,
+                      background: LEVEL_COLORS[day.level ?? countToLevel(day.contributionCount)],
+                    }}
+                  />
+                );
+              })}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function countToLevel(count) {
+  if (count === 0) return 0;
+  if (count <= 3) return 1;
+  if (count <= 6) return 2;
+  if (count <= 9) return 3;
+  return 4;
+}
 
 export default function GithubTracker() {
   const [data, setData] = useState(null);
+  const [calendar, setCalendar] = useState(null);
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    getGithubData()
-      .then((res) => setData(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      getGithubData().then((r) => setData(r.data)).catch(() => {}),
+      getGithubContributions().then((r) => setCalendar(r.data)).catch(() => {}),
+    ]).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -51,171 +188,68 @@ export default function GithubTracker() {
       </motion.div>
 
       {loading ? (
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="card h-24 skeleton" />
-          ))}
-        </div>
-      ) : data ? (
-        <>
-          {/* Stats Grid */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"
-          >
-            {[
-              { label: "Public Repos", value: data.publicRepos, icon: "📦" },
-              { label: "Total Stars", value: data.totalStars, icon: "⭐" },
-              { label: "Followers", value: data.followers, icon: "👥" },
-              { label: "Following", value: data.following, icon: "➡️" },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.1 * i + 0.3 }}
-                whileHover={{
-                  borderColor: "var(--border-accent)",
-                }}
-                className="card text-center py-5"
-              >
-                <div className="text-2xl mb-1">{stat.icon}</div>
-                <p className="font-display text-2xl font-bold text-accent">
-                  {stat.value}
-                </p>
-                <p className="font-mono text-xs text-slate mt-1">
-                  {stat.label}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-10">
-            {/* Top Languages Chart */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: 0.4 }}
-              className="card"
-            >
-              <h3 className="font-display font-semibold text-lightest-slate mb-6">
-                Top Languages
-              </h3>
-              <div className="h-48">
-                <ResponsiveContainer>
-                  <BarChart
-                    data={data.topLanguages}
-                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
-                  >
-                    <XAxis
-                      dataKey="lang"
-                      tick={{
-                        fill: "var(--text-secondary)",
-                        fontSize: 11,
-                        fontFamily: "var(--font-mono)",
-                      }}
-                    />
-                    <YAxis tick={{ fill: "var(--text-secondary)", fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "var(--bg-secondary)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "6px",
-                        color: "var(--text-primary)",
-                        fontFamily: "JetBrains Mono",
-                        fontSize: 12,
-                      }}
-                      cursor={{ fill: "rgba(var(--accent-rgb), 0.05)" }}
-                    />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {data.topLanguages?.map((entry, i) => (
-                        <Cell
-                          key={i}
-                          fill={LANG_COLORS[entry.lang] || LANG_COLORS.Other}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-
-            {/* Recent Repos */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: 0.4 }}
-              className="space-y-3"
-            >
-              <h3 className="font-display font-semibold text-lightest-slate mb-4">
-                Recent Repositories
-              </h3>
-              {data.recentRepos?.slice(0, 4).map((repo, i) => (
-                <motion.a
-                  key={i}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ borderColor: "var(--border-accent)" }}
-                  className="flex items-center justify-between card px-4 py-3 transition-all block"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-lightest-slate text-sm font-medium truncate">
-                      {repo.name}
-                    </p>
-                    {repo.description && (
-                      <p className="text-slate text-xs truncate mt-0.5">
-                        {repo.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                    {repo.language && (
-                      <div className="flex items-center gap-1">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            background: LANG_COLORS[repo.language] || "#8892b0",
-                          }}
-                        />
-                        <span className="font-mono text-xs text-slate">
-                          {repo.language}
-                        </span>
-                      </div>
-                    )}
-                    <span className="font-mono text-xs text-slate">
-                      ⭐{repo.stars}
-                    </span>
-                  </div>
-                </motion.a>
-              ))}
-              <a
-                href={data.profileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary inline-flex items-center gap-2 mt-2 text-xs"
-              >
-                View GitHub Profile →
-              </a>
-            </motion.div>
-          </div>
-        </>
+        <div className="card contrib-skeleton" />
       ) : (
-        <div className="text-center py-16">
-          <p className="text-slate font-mono text-sm">
-            GitHub data unavailable. Configure GITHUB_TOKEN in backend.
-          </p>
-          <a
-            href="https://github.com/ShashankGanapatiNaik"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary mt-4 inline-flex"
-          >
-            View GitHub Profile
-          </a>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="card contrib-card"
+        >
+          {/* Header */}
+          <div className="contrib-header">
+            {data && (
+              <div className="contrib-profile">
+                {data.avatar && (
+                  <img src={data.avatar} alt={data.username} className="contrib-avatar" />
+                )}
+                <div>
+                  <p className="contrib-name">{data.name || data.username}</p>
+                  <a
+                    href={data.profileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="contrib-username"
+                  >
+                    @{data.username}
+                  </a>
+                </div>
+              </div>
+            )}
+            {calendar && (
+              <span className="contrib-total">
+                {calendar.totalContributions.toLocaleString()} contributions in the last year
+              </span>
+            )}
+          </div>
+
+          {/* Heatmap */}
+          {calendar ? (
+            <div className="contrib-scroll">
+              <ContributionGrid weeks={calendar.weeks} isInView={isInView} />
+            </div>
+          ) : (
+            <p className="contrib-unavailable">Contribution data unavailable.</p>
+          )}
+
+          {/* Legend */}
+          <div className="contrib-legend">
+            <span>Less</span>
+            {[0, 1, 2, 3, 4].map((l) => (
+              <div
+                key={l}
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 2,
+                  background: LEVEL_COLORS[l],
+                  flexShrink: 0,
+                }}
+              />
+            ))}
+            <span>More</span>
+          </div>
+        </motion.div>
       )}
     </section>
   );

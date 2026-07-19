@@ -90,4 +90,43 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Contribution calendar — uses public API, no token required
+router.get('/contributions', async (req, res) => {
+  try {
+    const response = await axios.get(
+      `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`,
+      { timeout: 10000 }
+    );
+
+    const raw = response.data?.contributions; // [{ date, count, level }]
+    if (!raw || !Array.isArray(raw)) {
+      return res.status(500).json({ error: 'No contribution data returned' });
+    }
+
+    // Group flat day list into weeks (Sun–Sat columns), matching GitHub's layout
+    const weeks = [];
+    let currentWeek = null;
+
+    raw.forEach((day) => {
+      const dayOfWeek = new Date(day.date).getUTCDay(); // 0 = Sun
+      if (currentWeek === null || dayOfWeek === 0) {
+        currentWeek = { contributionDays: [] };
+        weeks.push(currentWeek);
+      }
+      currentWeek.contributionDays.push({
+        date: day.date,
+        contributionCount: day.count,
+        level: day.level, // 0-4
+      });
+    });
+
+    const totalContributions = raw.reduce((sum, d) => sum + d.count, 0);
+
+    res.json({ totalContributions, weeks });
+  } catch (err) {
+    console.error('Contributions API error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch contributions' });
+  }
+});
+
 module.exports = router;

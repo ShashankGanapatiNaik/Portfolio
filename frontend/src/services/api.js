@@ -47,6 +47,7 @@ export const deleteMessage = (id) => api.delete(`/contact/${id}`);
 
 // GitHub
 export const getGithubData = () => api.get("/github");
+export const getGithubContributions = () => api.get("/github/contributions");
 
 // LeetCode
 export const getLeetcodeData = () => api.get("/leetcode");

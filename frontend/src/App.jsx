@@ -16,7 +16,7 @@ function App() {
               background: "var(--bg-secondary)",
               color: "var(--text-primary)",
               border: "1px solid var(--border)",
-              fontFamily: '"DM Sans", sans-serif',
+              fontFamily: "var(--font-sans)",
             },
             success: {
               iconTheme: {
