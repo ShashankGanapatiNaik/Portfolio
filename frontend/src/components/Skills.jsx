@@ -1,104 +1,163 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { getSkills } from '../services/api';
 
+/* ── Category metadata ── */
+const CATEGORY_META = {
+  'Programming Languages': { icon: '⌨️', color: '#818cf8', light: 'rgba(129,140,248,0.12)' },
+  'Frontend Technologies':  { icon: '🎨', color: '#f472b6', light: 'rgba(244,114,182,0.12)' },
+  'Backend Technologies':   { icon: '⚙️', color: '#34d399', light: 'rgba(52,211,153,0.12)'  },
+  'Databases':              { icon: '🗄️', color: '#fbbf24', light: 'rgba(251,191,36,0.12)'  },
+  'AI & Data':              { icon: '🤖', color: '#60a5fa', light: 'rgba(96,165,250,0.12)'  },
+  'Developer Tools':        { icon: '🛠️', color: '#fb923c', light: 'rgba(251,146,60,0.12)'  },
+};
+
+const DEFAULT_META = { icon: '💡', color: '#34d399', light: 'rgba(52,211,153,0.12)' };
+
 const FALLBACK_SKILLS = [
-  { category: 'Programming Languages', skills: [{ name: 'JavaScript', level: 90 }, { name: 'Python', level: 88 }, { name: 'Java', level: 85 }, { name: 'C', level: 75 }] },
-  { category: 'Frontend Technologies', skills: [{ name: 'React.js', level: 90 }, { name: 'HTML5', level: 95 }, { name: 'CSS3', level: 88 }, { name: 'Tailwind CSS', level: 85 }] },
-  { category: 'Backend Technologies', skills: [{ name: 'Node.js', level: 88 }, { name: 'Express.js', level: 87 }, { name: 'FastAPI', level: 80 }, { name: 'REST APIs', level: 90 }] },
-  { category: 'Databases', skills: [{ name: 'MongoDB', level: 85 }, { name: 'MySQL', level: 80 }] },
-  { category: 'AI & Data', skills: [{ name: 'Machine Learning', level: 82 }, { name: 'Deep Learning', level: 78 }, { name: 'NLP', level: 75 }, { name: 'PySpark', level: 72 }] },
-  { category: 'Developer Tools', skills: [{ name: 'Git/GitHub', level: 90 }, { name: 'JWT Auth', level: 85 }, { name: 'OpenCV', level: 75 }, { name: 'DeepFace', level: 72 }] },
+  { category: 'Programming Languages', skills: [{ name: 'JavaScript' }, { name: 'Python' }, { name: 'Java' }, { name: 'C' }] },
+  { category: 'Frontend Technologies',  skills: [{ name: 'React.js' }, { name: 'HTML5' }, { name: 'CSS3' }, { name: 'Tailwind CSS' }] },
+  { category: 'Backend Technologies',   skills: [{ name: 'Node.js' }, { name: 'Express.js' }, { name: 'FastAPI' }, { name: 'REST APIs' }] },
+  { category: 'Databases',              skills: [{ name: 'MongoDB' }, { name: 'MySQL' }] },
+  { category: 'AI & Data',              skills: [{ name: 'Machine Learning' }, { name: 'Deep Learning' }, { name: 'NLP' }, { name: 'PySpark' }] },
+  { category: 'Developer Tools',        skills: [{ name: 'Git/GitHub' }, { name: 'JWT Auth' }, { name: 'OpenCV' }, { name: 'DeepFace' }] },
 ];
+
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 28, scale: 0.96 },
+  show:   { opacity: 1, y: 0,  scale: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const chipVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  show:   { opacity: 1, scale: 1, transition: { duration: 0.25, ease: 'backOut' } },
+};
 
 export default function Skills() {
   const [skills, setSkills] = useState(FALLBACK_SKILLS);
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeTab, setActiveTab] = useState('All');
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   useEffect(() => {
     getSkills().then(res => { if (res.data?.length) setSkills(res.data); }).catch(() => {});
   }, []);
 
-  const displayed = activeCategory
-    ? skills.filter(s => s.category === activeCategory)
-    : skills;
+  const tabs = ['All', ...skills.map(s => s.category)];
+  const displayed = activeTab === 'All' ? skills : skills.filter(s => s.category === activeTab);
 
   return (
     <section id="skills" ref={ref} className="section-container">
+      {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 18 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
+        className="section-header center"
       >
-        <div className="section-header center">
-          <span className="section-eyebrow">02. Expertise</span>
-          <h2 className="section-title">Skills & Technologies</h2>
-        </div>
+        <span className="section-eyebrow">02. Expertise</span>
+        <h2 className="section-title">Skills &amp; Technologies</h2>
+        <p className="skills-subtitle">
+          A curated stack I've built projects with — from frontend polish to backend infrastructure.
+        </p>
       </motion.div>
 
-      {/* Category Filter */}
+      {/* Tab strip */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ delay: 0.2 }}
-        className="flex flex-wrap gap-2 mb-10"
+        initial={{ opacity: 0, y: 10 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="skills-tabs"
       >
-        <button
-          onClick={() => setActiveCategory(null)}
-          className={`px-[10px] py-[4px] font-mono text-[13px] font-medium rounded border transition-all ${
-            !activeCategory ? 'border-accent text-accent' : 'border-border text-slate hover:border-border-accent hover:text-accent'
-          }`}
-        >
-          All
-        </button>
-        {skills.map(s => (
-          <button
-            key={s.category}
-            onClick={() => setActiveCategory(s.category === activeCategory ? null : s.category)}
-            className={`px-[10px] py-[4px] font-mono text-[13px] font-medium rounded border transition-all ${
-              activeCategory === s.category ? 'border-accent text-accent' : 'border-border text-slate hover:border-border-accent hover:text-accent'
-            }`}
-          >
-            {s.category}
-          </button>
-        ))}
+        {tabs.map(tab => {
+          const meta = tab === 'All' ? { icon: '✦', color: '#34d399' } : (CATEGORY_META[tab] || DEFAULT_META);
+          const active = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="skills-tab"
+              style={{
+                '--tab-color': meta.color,
+                borderColor:   active ? meta.color : 'transparent',
+                color:         active ? meta.color : 'var(--text-secondary)',
+                background:    active ? `${meta.color}14` : 'transparent',
+              }}
+            >
+              <span className="skills-tab-icon">{meta.icon}</span>
+              <span className="skills-tab-label">
+                {tab === 'All' ? 'All' : tab.replace(' Technologies', '').replace(' & Data', ' & AI')}
+              </span>
+            </button>
+          );
+        })}
       </motion.div>
 
-      {/* Skills Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayed.map((cat, i) => (
-          <motion.div
-            key={cat.category}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
-            whileHover={{ borderColor: 'var(--border-accent)' }}
-            className="card flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-accent" />
-                <h3 className="font-display font-semibold text-lightest-slate text-sm">{cat.category}</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {cat.skills?.map((skill, j) => (
-                  <motion.span
-                    key={skill.name}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.3, delay: j * 0.05 }}
-                    className="tag hover:border-accent hover:text-accent cursor-default"
-                  >
-                    {skill.name}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {/* Card grid */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="skills-grid"
+        >
+          {displayed.map((cat) => {
+            const meta = CATEGORY_META[cat.category] || DEFAULT_META;
+            return (
+              <motion.div
+                key={cat.category}
+                variants={cardVariants}
+                className="skills-card"
+                style={{ '--card-color': meta.color, '--card-bg': meta.light }}
+                whileHover="hovered"
+              >
+                {/* Card glow border on hover */}
+                <div className="skills-card-glow" />
+
+                {/* Card header */}
+                <div className="skills-card-header">
+                  <div className="skills-card-icon" style={{ background: meta.light, color: meta.color }}>
+                    {meta.icon}
+                  </div>
+                  <div>
+                    <h3 className="skills-card-title">{cat.category}</h3>
+                    <p className="skills-card-count">{cat.skills?.length} skills</p>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="skills-card-divider" style={{ background: `linear-gradient(90deg, ${meta.color}50, transparent)` }} />
+
+                {/* Skill chips */}
+                <motion.div
+                  className="skills-chips"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
+                  {cat.skills?.map((skill) => (
+                    <motion.span
+                      key={skill.name}
+                      variants={chipVariants}
+                      className="skills-chip"
+                      style={{ '--chip-color': meta.color }}
+                      whileHover={{ scale: 1.06, y: -2 }}
+                    >
+                      {skill.name}
+                    </motion.span>
+                  ))}
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }

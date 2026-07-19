@@ -7,10 +7,12 @@ import LeetcodeTracker from '../components/LeetcodeTracker';
 import GithubTracker from '../components/GithubTracker';
 import Contact from '../components/Contact';
 import Chatbot from '../components/Chatbot';
+import BackgroundEffects from '../components/BackgroundEffects';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-navy animated-gradient">
+      <BackgroundEffects />
       <Navbar />
       <main>
         <Hero />
@@ -33,3 +35,4 @@ export default function Home() {
     </div>
   );
 }
+
