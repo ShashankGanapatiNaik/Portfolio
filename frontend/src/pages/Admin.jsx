@@ -3,26 +3,39 @@ import { motion, AnimatePresence } from "framer-motion";
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 import {
-  loginAdmin,
-  getProjects,
-  createProject,
-  updateProject,
-  deleteProject,
-  getSkills,
-  createSkillCategory,
-  deleteSkillCategory,
-  getMessages,
-  markMessageRead,
-  deleteMessage,
-  uploadResume,
+  loginAdmin, getProjects, createProject, updateProject, deleteProject,
+  getSkills, createSkillCategory, deleteSkillCategory,
+  getMessages, markMessageRead, deleteMessage, uploadResume,
 } from "../services/api";
 import toast from "react-hot-toast";
 
-// ─── Login ────────────────────────────────────────────────────────────────────
+/* ─── SVG Icons ─────────────────────────────────────────────────────────── */
+const Icon = ({ d, size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+
+const ICONS = {
+  projects: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2",
+  skills:   "M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18",
+  messages: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z",
+  resume:   "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
+  logout:   "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1",
+  edit:     "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
+  trash:    "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16",
+  check:    "M5 13l4 4L19 7",
+  plus:     "M12 4v16m8-8H4",
+  back:     "M10 19l-7-7m0 0l7-7m-7 7h18",
+};
+
+/* ─── Login Page ─────────────────────────────────────────────────────────── */
 function LoginForm({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,628 +53,498 @@ function LoginForm({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-navy flex items-center justify-center p-6">
+    <div className="adm-login-bg">
+      {/* Animated background orbs */}
+      <div className="adm-orb adm-orb-1" />
+      <div className="adm-orb adm-orb-2" />
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card w-full max-w-md"
+        initial={{ opacity: 0, y: 28, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="adm-login-card"
       >
-        <div className="text-center mb-8">
-          <p className="font-mono text-accent text-sm mb-2">Admin Portal</p>
-          <h1 className="font-display text-2xl font-bold text-lightest-slate">
-            Portfolio Dashboard
-          </h1>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Logo area */}
+        <div className="adm-login-logo">
+          <div className="adm-login-logo-icon">⚡</div>
           <div>
-            <label className="font-mono text-xs text-slate mb-2 block">
-              Email
-            </label>
+            <p className="adm-login-eyebrow">Admin Portal</p>
+            <h1 className="adm-login-title">Portfolio Dashboard</h1>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="adm-login-form">
+          <div className="adm-field">
+            <label className="adm-label">Email address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
+              className="adm-input"
               placeholder="admin@example.com"
+              required
             />
           </div>
-          <div>
-            <label className="font-mono text-xs text-slate mb-2 block">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
-            />
+
+          <div className="adm-field">
+            <label className="adm-label">Password</label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="adm-input"
+                placeholder="••••••••"
+                required
+                style={{ paddingRight: "2.5rem" }}
+              />
+              <button type="button" className="adm-pw-toggle" onClick={() => setShowPw(v => !v)}>
+                {showPw ? "🙈" : "👁️"}
+              </button>
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? "Logging in..." : "Login →"}
+
+          <button type="submit" disabled={loading} className="adm-btn-primary">
+            {loading ? (
+              <span className="adm-spinner" />
+            ) : (
+              <>Sign in <span style={{ marginLeft: 4 }}>→</span></>
+            )}
           </button>
         </form>
+
+        <p className="adm-login-hint">Secure admin access only</p>
       </motion.div>
     </div>
   );
 }
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-const TABS = ["Projects", "Skills", "Messages", "Resume"];
+/* ─── Sidebar Nav ────────────────────────────────────────────────────────── */
+const NAV_ITEMS = [
+  { id: "Projects", icon: ICONS.projects, label: "Projects" },
+  { id: "Skills",   icon: ICONS.skills,   label: "Skills"   },
+  { id: "Messages", icon: ICONS.messages, label: "Messages" },
+  { id: "Resume",   icon: ICONS.resume,   label: "Files"    },
+];
 
-// ─── Main Admin Dashboard ─────────────────────────────────────────────────────
+/* ─── Stat Card ──────────────────────────────────────────────────────────── */
+function StatCard({ label, value, color, icon }) {
+  return (
+    <div className="adm-stat-card" style={{ "--stat-color": color }}>
+      <div className="adm-stat-icon">{icon}</div>
+      <div className="adm-stat-val">{value}</div>
+      <div className="adm-stat-label">{label}</div>
+    </div>
+  );
+}
+
+/* ─── Main Admin ─────────────────────────────────────────────────────────── */
 export default function Admin() {
   const [token, setToken] = useState(localStorage.getItem("adminToken"));
   const [activeTab, setActiveTab] = useState("Projects");
-
-  // Projects state
   const [projects, setProjects] = useState([]);
   const [editingProject, setEditingProject] = useState(null);
   const [projectForm, setProjectForm] = useState({
-    title: "",
-    description: "",
-    techStack: "",
-    githubLink: "",
-    liveDemo: "",
-    featured: false,
+    title: "", description: "", techStack: "", githubLink: "", liveDemo: "", featured: false,
   });
-
-  // Skills state
   const [skills, setSkills] = useState([]);
-
-  // Messages state
   const [messages, setMessages] = useState([]);
 
   const loadData = async () => {
     try {
       const [projRes, skillRes, msgRes] = await Promise.all([
-        getProjects(),
-        getSkills(),
-        getMessages(),
+        getProjects(), getSkills(), getMessages(),
       ]);
       setProjects(projRes.data);
       setSkills(skillRes.data);
       setMessages(msgRes.data);
-    } catch (err) {
-      toast.error("Failed to load data. Make sure you're logged in.");
+    } catch {
+      toast.error("Failed to load data.");
     }
   };
 
-  useEffect(() => {
-    if (token) loadData();
-  }, [token]);
+  useEffect(() => { if (token) loadData(); }, [token]);
 
   if (!token) return <LoginForm onLogin={setToken} />;
 
-  // ── Project Handlers ───────────────────────────────────────────────────────
+  /* handlers */
   const handleProjectSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...projectForm,
-      techStack: projectForm.techStack.split(",").map((t) => t.trim()),
-    };
+    const payload = { ...projectForm, techStack: projectForm.techStack.split(",").map(t => t.trim()) };
     try {
-      if (editingProject) {
-        await updateProject(editingProject._id, payload);
-        toast.success("Project updated!");
-      } else {
-        await createProject(payload);
-        toast.success("Project created!");
-      }
-      setProjectForm({
-        title: "",
-        description: "",
-        techStack: "",
-        githubLink: "",
-        liveDemo: "",
-        featured: false,
-      });
+      if (editingProject) { await updateProject(editingProject._id, payload); toast.success("Project updated!"); }
+      else { await createProject(payload); toast.success("Project created!"); }
+      setProjectForm({ title: "", description: "", techStack: "", githubLink: "", liveDemo: "", featured: false });
       setEditingProject(null);
       loadData();
-    } catch {
-      toast.error("Failed to save project");
-    }
+    } catch { toast.error("Failed to save project"); }
   };
 
   const handleDeleteProject = async (id) => {
     if (!confirm("Delete this project?")) return;
-    try {
-      await deleteProject(id);
-      toast.success("Deleted!");
-      loadData();
-    } catch {
-      toast.error("Failed to delete");
-    }
+    try { await deleteProject(id); toast.success("Deleted!"); loadData(); }
+    catch { toast.error("Failed to delete"); }
   };
 
   const handleEditProject = (project) => {
     setEditingProject(project);
-    setProjectForm({
-      ...project,
-      techStack: project.techStack?.join(", ") || "",
-    });
+    setProjectForm({ ...project, techStack: project.techStack?.join(", ") || "" });
   };
 
-  // ── Message Handlers ───────────────────────────────────────────────────────
-  const handleMarkRead = async (id) => {
-    await markMessageRead(id);
-    loadData();
-  };
+  const handleMarkRead  = async (id) => { await markMessageRead(id); loadData(); };
   const handleDeleteMsg = async (id) => {
     if (!confirm("Delete message?")) return;
-    await deleteMessage(id);
-    loadData();
+    await deleteMessage(id); loadData();
   };
 
-  // ── Resume Upload ──────────────────────────────────────────────────────────
   const handleResumeUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("resume", file);
-    try {
-      await uploadResume(fd);
-      toast.success("Resume uploaded!");
-    } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || "Upload failed";
-      toast.error(`Upload failed: ${errMsg}`);
-    }
+    const file = e.target.files[0]; if (!file) return;
+    const fd = new FormData(); fd.append("resume", file);
+    try { await uploadResume(fd); toast.success("Resume uploaded!"); }
+    catch (err) { toast.error(`Upload failed: ${err.response?.data?.error || err.message}`); }
   };
 
-  // ── Profile Photo Upload ────────────────────────────────────────────────────
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("photo", file);
+    const file = e.target.files[0]; if (!file) return;
+    const fd = new FormData(); fd.append("photo", file);
     try {
-      await import("../services/api").then((api) =>
-        api.default.post("/profile/photo", fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        }),
-      );
-      toast.success("Profile photo uploaded! Refresh portfolio to see it.");
-      // Force reload the preview
-      const img = document.querySelector(
-        "img[src={`${API_BASE}/profile/photo`}]",
-      );
-      if (img) img.src = `/api/profile/photo?t=${Date.now()}`;
-    } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || "Photo upload failed";
-      toast.error(`Photo upload failed: ${errMsg}`);
-    }
+      await import("../services/api").then(api => api.default.post("/profile/photo", fd, { headers: { "Content-Type": "multipart/form-data" } }));
+      toast.success("Profile photo uploaded!");
+    } catch (err) { toast.error(`Photo upload failed: ${err.response?.data?.error || err.message}`); }
   };
+
+  const unread = messages.filter(m => !m.read).length;
 
   return (
-    <div className="min-h-screen bg-navy">
-      {/* Header */}
-      <div className="bg-light-navy border-b border-lightest-navy px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <a href="/" className="font-mono text-accent text-sm hover:underline">
-            ← Portfolio
-          </a>
-          <span className="text-lightest-navy">|</span>
-          <h1 className="font-display font-bold text-lightest-slate">
-            Admin Dashboard
-          </h1>
+    <div className="adm-shell">
+      {/* ── Sidebar ── */}
+      <aside className="adm-sidebar">
+        <div className="adm-sidebar-logo">
+          <span className="adm-sidebar-logo-icon">⚡</span>
+          <span className="adm-sidebar-logo-text">Admin</span>
         </div>
-        <button
-          onClick={() => {
-            localStorage.removeItem("adminToken");
-            setToken(null);
-          }}
-          className="font-mono text-xs text-slate hover:text-accent transition-colors"
-        >
-          Logout
-        </button>
-      </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Tabs */}
-        <div className="flex gap-1 mb-8 bg-light-navy rounded-xl p-1 border border-lightest-navy">
-          {TABS.map((tab) => (
+        <nav className="adm-nav">
+          {NAV_ITEMS.map(item => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 px-4 rounded-lg font-mono text-sm transition-all ${
-                activeTab === tab
-                  ? "bg-accent text-navy font-bold"
-                  : "text-slate hover:text-lightest-slate"
-              }`}
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`adm-nav-item${activeTab === item.id ? " adm-nav-item--active" : ""}`}
             >
-              {tab}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                {item.icon.split(" M").map((seg, i) => (
+                  <path key={i} d={i === 0 ? seg : "M" + seg} />
+                ))}
+              </svg>
+              <span>{item.label}</span>
+              {item.id === "Messages" && unread > 0 && (
+                <span className="adm-badge">{unread}</span>
+              )}
             </button>
           ))}
+        </nav>
+
+        <div className="adm-sidebar-footer">
+          <a href="/" className="adm-nav-item" style={{ textDecoration: "none" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Portfolio</span>
+          </a>
+          <button className="adm-nav-item adm-nav-logout"
+            onClick={() => { localStorage.removeItem("adminToken"); setToken(null); }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </button>
         </div>
+      </aside>
 
-        {/* ── PROJECTS TAB ── */}
-        {activeTab === "Projects" && (
-          <div className="space-y-8">
-            {/* Form */}
-            <div className="card">
-              <h2 className="font-display font-semibold text-lightest-slate mb-6">
-                {editingProject ? "Edit Project" : "Add New Project"}
-              </h2>
-              <form
-                onSubmit={handleProjectSubmit}
-                className="grid md:grid-cols-2 gap-4"
-              >
-                <div className="md:col-span-2">
-                  <label className="font-mono text-xs text-slate mb-1 block">
-                    Title *
-                  </label>
-                  <input
-                    value={projectForm.title}
-                    onChange={(e) =>
-                      setProjectForm((f) => ({ ...f, title: e.target.value }))
-                    }
-                    className="input-field"
-                    placeholder="Project Title"
-                    required
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="font-mono text-xs text-slate mb-1 block">
-                    Description *
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={projectForm.description}
-                    onChange={(e) =>
-                      setProjectForm((f) => ({
-                        ...f,
-                        description: e.target.value,
-                      }))
-                    }
-                    className="input-field resize-none"
-                    placeholder="Project description..."
-                    required
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="font-mono text-xs text-slate mb-1 block">
-                    Tech Stack (comma-separated)
-                  </label>
-                  <input
-                    value={projectForm.techStack}
-                    onChange={(e) =>
-                      setProjectForm((f) => ({
-                        ...f,
-                        techStack: e.target.value,
-                      }))
-                    }
-                    className="input-field"
-                    placeholder="React.js, Node.js, MongoDB"
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-xs text-slate mb-1 block">
-                    GitHub Link
-                  </label>
-                  <input
-                    value={projectForm.githubLink}
-                    onChange={(e) =>
-                      setProjectForm((f) => ({
-                        ...f,
-                        githubLink: e.target.value,
-                      }))
-                    }
-                    className="input-field"
-                    placeholder="https://github.com/..."
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-xs text-slate mb-1 block">
-                    Live Demo
-                  </label>
-                  <input
-                    value={projectForm.liveDemo}
-                    onChange={(e) =>
-                      setProjectForm((f) => ({
-                        ...f,
-                        liveDemo: e.target.value,
-                      }))
-                    }
-                    className="input-field"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={projectForm.featured}
-                    onChange={(e) =>
-                      setProjectForm((f) => ({
-                        ...f,
-                        featured: e.target.checked,
-                      }))
-                    }
-                    className="accent-accent"
-                  />
-                  <label
-                    htmlFor="featured"
-                    className="font-mono text-xs text-slate cursor-pointer"
-                  >
-                    Featured Project
-                  </label>
-                </div>
-                <div className="md:col-span-2 flex gap-3">
-                  <button type="submit" className="btn-primary">
-                    {editingProject ? "Update" : "Create"} Project
-                  </button>
-                  {editingProject && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingProject(null);
-                        setProjectForm({
-                          title: "",
-                          description: "",
-                          techStack: "",
-                          githubLink: "",
-                          liveDemo: "",
-                          featured: false,
-                        });
-                      }}
-                      className="font-mono text-sm text-slate hover:text-lightest-slate transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </form>
-            </div>
-
-            {/* List */}
-            <div className="space-y-3">
-              {projects.map((p) => (
-                <div
-                  key={p._id}
-                  className="card flex items-start justify-between gap-4"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-display font-semibold text-lightest-slate">
-                        {p.title}
-                      </h3>
-                      {p.featured && (
-                        <span className="tag text-xs">Featured</span>
-                      )}
-                    </div>
-                    <p className="text-slate text-sm line-clamp-2">
-                      {p.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {p.techStack?.slice(0, 4).map((t) => (
-                        <span
-                          key={t}
-                          className="font-mono text-xs text-slate/70"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => handleEditProject(p)}
-                      className="font-mono text-xs text-accent hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProject(p._id)}
-                      className="font-mono text-xs text-red-400 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* ── Main content ── */}
+      <main className="adm-main">
+        {/* Top header */}
+        <header className="adm-header">
+          <div>
+            <h1 className="adm-header-title">{activeTab}</h1>
+            <p className="adm-header-sub">
+              {activeTab === "Projects" && `${projects.length} projects total`}
+              {activeTab === "Messages" && `${unread} unread · ${messages.length} total`}
+              {activeTab === "Skills"   && `${skills.length} categories`}
+              {activeTab === "Resume"   && "Manage files & media"}
+            </p>
           </div>
-        )}
 
-        {/* ── MESSAGES TAB ── */}
-        {activeTab === "Messages" && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display font-semibold text-lightest-slate">
-                Contact Messages{" "}
-                <span className="text-accent">
-                  ({messages.filter((m) => !m.read).length} unread)
-                </span>
-              </h2>
-            </div>
-            {messages.length === 0 ? (
-              <p className="text-slate font-mono text-sm text-center py-12">
-                No messages yet.
-              </p>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg._id}
-                  className={`card transition-all ${!msg.read ? "border-accent/30" : ""}`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="font-display font-semibold text-lightest-slate">
-                          {msg.name}
-                        </span>
-                        {!msg.read && (
-                          <span className="w-2 h-2 rounded-full bg-accent inline-block" />
-                        )}
-                        <span className="font-mono text-xs text-slate">
-                          {new Date(msg.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <a
-                        href={`mailto:${msg.email}`}
-                        className="font-mono text-xs text-accent hover:underline"
-                      >
-                        {msg.email}
-                      </a>
-                      <p className="text-slate text-sm mt-2">{msg.message}</p>
+          {/* Stat pills */}
+          <div className="adm-header-stats">
+            <div className="adm-mini-stat"><span className="adm-mini-num">{projects.length}</span> Projects</div>
+            <div className="adm-mini-stat"><span className="adm-mini-num" style={{ color: "#f472b6" }}>{unread}</span> Unread</div>
+            <div className="adm-mini-stat"><span className="adm-mini-num" style={{ color: "#60a5fa" }}>{skills.length}</span> Skills</div>
+          </div>
+        </header>
+
+        <div className="adm-content">
+          <AnimatePresence mode="wait">
+            {/* ══ PROJECTS ══ */}
+            {activeTab === "Projects" && (
+              <motion.div key="projects"
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
+                className="adm-tab-body">
+
+                {/* Form card */}
+                <div className="adm-card">
+                  <div className="adm-card-header">
+                    <h2 className="adm-card-title">
+                      {editingProject ? "✏️ Edit Project" : "➕ Add New Project"}
+                    </h2>
+                    {editingProject && (
+                      <button className="adm-btn-ghost"
+                        onClick={() => { setEditingProject(null); setProjectForm({ title: "", description: "", techStack: "", githubLink: "", liveDemo: "", featured: false }); }}>
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleProjectSubmit} className="adm-form-grid">
+                    <div className="adm-field adm-col-2">
+                      <label className="adm-label">Project Title *</label>
+                      <input value={projectForm.title}
+                        onChange={e => setProjectForm(f => ({ ...f, title: e.target.value }))}
+                        className="adm-input" placeholder="My Awesome Project" required />
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      {!msg.read && (
-                        <button
-                          onClick={() => handleMarkRead(msg._id)}
-                          className="font-mono text-xs text-accent hover:underline"
-                        >
-                          Mark Read
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDeleteMsg(msg._id)}
-                        className="font-mono text-xs text-red-400 hover:underline"
-                      >
-                        Delete
+
+                    <div className="adm-field adm-col-2">
+                      <label className="adm-label">Description *</label>
+                      <textarea rows={3} value={projectForm.description}
+                        onChange={e => setProjectForm(f => ({ ...f, description: e.target.value }))}
+                        className="adm-input adm-textarea" placeholder="Describe what this project does..." required />
+                    </div>
+
+                    <div className="adm-field adm-col-2">
+                      <label className="adm-label">Tech Stack <span className="adm-label-hint">(comma-separated)</span></label>
+                      <input value={projectForm.techStack}
+                        onChange={e => setProjectForm(f => ({ ...f, techStack: e.target.value }))}
+                        className="adm-input" placeholder="React.js, Node.js, MongoDB" />
+                    </div>
+
+                    <div className="adm-field">
+                      <label className="adm-label">GitHub URL</label>
+                      <input value={projectForm.githubLink}
+                        onChange={e => setProjectForm(f => ({ ...f, githubLink: e.target.value }))}
+                        className="adm-input" placeholder="https://github.com/..." />
+                    </div>
+
+                    <div className="adm-field">
+                      <label className="adm-label">Live Demo URL</label>
+                      <input value={projectForm.liveDemo}
+                        onChange={e => setProjectForm(f => ({ ...f, liveDemo: e.target.value }))}
+                        className="adm-input" placeholder="https://..." />
+                    </div>
+
+                    <div className="adm-field adm-col-2">
+                      <label className="adm-toggle-label">
+                        <div className={`adm-toggle${projectForm.featured ? " adm-toggle--on" : ""}`}
+                          onClick={() => setProjectForm(f => ({ ...f, featured: !f.featured }))}>
+                          <div className="adm-toggle-thumb" />
+                        </div>
+                        <span>Mark as Featured Project</span>
+                      </label>
+                    </div>
+
+                    <div className="adm-field adm-col-2">
+                      <button type="submit" className="adm-btn-primary" style={{ width: "fit-content" }}>
+                        {editingProject ? "Update Project" : "Create Project"}
                       </button>
                     </div>
-                  </div>
+                  </form>
                 </div>
-              ))
+
+                {/* Project list */}
+                <div className="adm-list">
+                  {projects.map((p, i) => (
+                    <motion.div key={p._id}
+                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="adm-list-item">
+                      <div className="adm-list-item-accent" />
+                      <div className="adm-list-item-body">
+                        <div className="adm-list-item-top">
+                          <div>
+                            <div className="adm-list-item-title-row">
+                              <h3 className="adm-list-item-title">{p.title}</h3>
+                              {p.featured && <span className="adm-featured-pill">✦ Featured</span>}
+                            </div>
+                            <p className="adm-list-item-desc">{p.description}</p>
+                            <div className="adm-list-chips">
+                              {p.techStack?.slice(0, 5).map(t => (
+                                <span key={t} className="adm-chip">{t}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="adm-list-item-actions">
+                            <button onClick={() => handleEditProject(p)} className="adm-action-btn adm-action-edit">
+                              Edit
+                            </button>
+                            <button onClick={() => handleDeleteProject(p._id)} className="adm-action-btn adm-action-delete">
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             )}
-          </div>
-        )}
 
-        {/* ── RESUME TAB ── */}
-        {activeTab === "Resume" && (
-          <div className="space-y-6">
-            {/* Resume Upload */}
-            <div className="card max-w-md">
-              <h2 className="font-display font-semibold text-lightest-slate mb-4">
-                Upload Resume
-              </h2>
-              <p className="text-slate text-sm mb-6">
-                Upload a PDF resume. This will replace the current active
-                resume.
-              </p>
-              <label className="block border-2 border-dashed border-lightest-navy hover:border-accent/50 rounded-xl p-10 text-center cursor-pointer transition-colors group">
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
-                  📄
-                </div>
-                <p className="font-mono text-sm text-slate group-hover:text-accent transition-colors">
-                  Click to upload PDF
-                </p>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleResumeUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
+            {/* ══ MESSAGES ══ */}
+            {activeTab === "Messages" && (
+              <motion.div key="messages"
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
+                className="adm-tab-body">
 
-            {/* Profile Photo Upload */}
-            <div className="card max-w-md">
-              <h2 className="font-display font-semibold text-lightest-slate mb-4">
-                Profile Photo
-              </h2>
-              <p className="text-slate text-sm mb-6">
-                Upload your profile photo. It will appear in the Hero section of
-                your portfolio.
-              </p>
+                {messages.length === 0 ? (
+                  <div className="adm-empty">
+                    <div className="adm-empty-icon">💬</div>
+                    <p>No messages yet</p>
+                  </div>
+                ) : (
+                  <div className="adm-list">
+                    {messages.map((msg, i) => (
+                      <motion.div key={msg._id}
+                        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className={`adm-msg-card${!msg.read ? " adm-msg-card--unread" : ""}`}>
+                        <div className="adm-msg-top">
+                          <div className="adm-msg-avatar">
+                            {msg.name?.[0]?.toUpperCase() || "?"}
+                          </div>
+                          <div className="adm-msg-meta">
+                            <div className="adm-msg-name-row">
+                              <span className="adm-msg-name">{msg.name}</span>
+                              {!msg.read && <span className="adm-unread-dot" />}
+                              <span className="adm-msg-date">
+                                {new Date(msg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              </span>
+                            </div>
+                            <a href={`mailto:${msg.email}`} className="adm-msg-email">{msg.email}</a>
+                          </div>
+                          <div className="adm-list-item-actions">
+                            {!msg.read && (
+                              <button onClick={() => handleMarkRead(msg._id)} className="adm-action-btn adm-action-edit">
+                                Mark Read
+                              </button>
+                            )}
+                            <button onClick={() => handleDeleteMsg(msg._id)} className="adm-action-btn adm-action-delete">
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                        <p className="adm-msg-body">{msg.message}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
 
-              {/* Preview current photo */}
-              <div className="flex items-center gap-4 mb-6">
-                <div
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    border: "1px solid var(--border)",
-                    background: "var(--bg-tertiary)",
-                    flexShrink: 0,
-                  }}
-                >
-                  <img
-                    src={`${API_BASE}/profile/photo`}
-                    alt="Current profile"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      e.target.parentNode.innerHTML =
-                        '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-primary);font-family:Inter,sans-serif;font-size:1.5rem;font-weight:700;">SN</div>';
-                    }}
-                  />
-                </div>
-                <div>
-                  <p className="text-lightest-slate text-sm font-medium">
-                    Current Photo
-                  </p>
-                  <p className="text-slate text-xs mt-1">
-                    Max 5MB • JPG, PNG, WEBP
-                  </p>
-                </div>
-              </div>
+            {/* ══ RESUME / FILES ══ */}
+            {activeTab === "Resume" && (
+              <motion.div key="resume"
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
+                className="adm-tab-body adm-files-grid">
 
-              <label className="block border-2 border-dashed border-lightest-navy hover:border-accent/50 rounded-xl p-8 text-center cursor-pointer transition-colors group">
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
-                  🖼️
+                {/* Resume */}
+                <div className="adm-card">
+                  <div className="adm-card-header">
+                    <h2 className="adm-card-title">📄 Resume</h2>
+                  </div>
+                  <p className="adm-card-desc">Upload a PDF — replaces the current active resume.</p>
+                  <label className="adm-dropzone">
+                    <div className="adm-dropzone-icon">📄</div>
+                    <p className="adm-dropzone-title">Click to upload PDF</p>
+                    <p className="adm-dropzone-hint">PDF files only</p>
+                    <input type="file" accept=".pdf" onChange={handleResumeUpload} className="hidden" />
+                  </label>
                 </div>
-                <p className="font-mono text-sm text-slate group-hover:text-accent transition-colors">
-                  Click to upload new photo
-                </p>
-                <p className="font-mono text-xs text-slate/50 mt-1">
-                  JPG, PNG, WEBP accepted
-                </p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-          </div>
-        )}
 
-        {/* ── SKILLS TAB ── */}
-        {activeTab === "Skills" && (
-          <div className="space-y-4">
-            <h2 className="font-display font-semibold text-lightest-slate mb-6">
-              Skills Categories
-            </h2>
-            {skills.map((s) => (
-              <div
-                key={s._id}
-                className="card flex items-center justify-between"
-              >
-                <div>
-                  <h3 className="font-display font-semibold text-lightest-slate">
-                    {s.category}
-                  </h3>
-                  <p className="font-mono text-xs text-slate mt-1">
-                    {s.skills?.map((sk) => sk.name).join(", ")}
-                  </p>
+                {/* Photo */}
+                <div className="adm-card">
+                  <div className="adm-card-header">
+                    <h2 className="adm-card-title">🖼️ Profile Photo</h2>
+                  </div>
+                  <p className="adm-card-desc">Appears in the Hero section of your portfolio.</p>
+
+                  <div className="adm-photo-preview">
+                    <div className="adm-photo-avatar">
+                      <img
+                        src={`${API_BASE}/profile/photo`}
+                        alt="Profile"
+                        onError={e => {
+                          e.target.style.display = "none";
+                          e.target.parentNode.innerHTML = '<span style="font-size:1.5rem;font-weight:700;color:var(--accent)">SN</span>';
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <p className="adm-photo-name">Current Photo</p>
+                      <p className="adm-photo-hint">Max 5MB · JPG, PNG, WEBP</p>
+                    </div>
+                  </div>
+
+                  <label className="adm-dropzone">
+                    <div className="adm-dropzone-icon">🖼️</div>
+                    <p className="adm-dropzone-title">Click to upload new photo</p>
+                    <p className="adm-dropzone-hint">JPG, PNG, WEBP accepted</p>
+                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                  </label>
                 </div>
-                <button
-                  onClick={async () => {
-                    await deleteSkillCategory(s._id);
-                    loadData();
-                  }}
-                  className="font-mono text-xs text-red-400 hover:underline"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              </motion.div>
+            )}
+
+            {/* ══ SKILLS ══ */}
+            {activeTab === "Skills" && (
+              <motion.div key="skills"
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
+                className="adm-tab-body">
+                <div className="adm-list">
+                  {skills.map((s, i) => (
+                    <motion.div key={s._id}
+                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="adm-list-item">
+                      <div className="adm-list-item-accent" />
+                      <div className="adm-list-item-body">
+                        <div className="adm-list-item-top">
+                          <div>
+                            <h3 className="adm-list-item-title">{s.category}</h3>
+                            <div className="adm-list-chips" style={{ marginTop: 6 }}>
+                              {s.skills?.map(sk => (
+                                <span key={sk.name} className="adm-chip">{sk.name}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="adm-list-item-actions">
+                            <button onClick={async () => { await deleteSkillCategory(s._id); loadData(); }}
+                              className="adm-action-btn adm-action-delete">Delete</button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-// Stable seeded particles (no re-render flicker)
+/* Stable seeded particles — no re-render flicker */
 const PARTICLES = Array.from({ length: 28 }, (_, i) => {
-  const seed = i * 137.508; // golden-angle spread
+  const seed = i * 137.508;
   return {
     id: i,
     x: (seed * 0.61803) % 100,
@@ -15,114 +15,113 @@ const PARTICLES = Array.from({ length: 28 }, (_, i) => {
 });
 
 export default function BackgroundEffects() {
-  const [dot, setDot] = useState({ x: -200, y: -200 });
-  const [ring, setRing] = useState({ x: -200, y: -200 });
-  const [visible, setVisible] = useState(false);
-  const [hovering, setHovering] = useState(false);
+  const dotRef       = useRef(null);
+  const ringRef      = useRef(null);
+  const spotlightRef = useRef(null);
+  const rafRef       = useRef(null);
 
-  const dotRef = useRef({ x: -200, y: -200 });
-  const ringRef = useRef({ x: -200, y: -200 });
-  const rafRef = useRef(null);
+  // Live mouse position (no state — just a ref)
+  const mouseRef = useRef({ x: -500, y: -500 });
+  // Current lerped ring position
+  const ringPosRef = useRef({ x: -500, y: -500 });
 
   useEffect(() => {
-    const onMove = (e) => {
-      dotRef.current = { x: e.clientX, y: e.clientY };
-      setDot({ x: e.clientX, y: e.clientY });
-      if (!visible) setVisible(true);
+    // Skip on touch devices
+    if (window.matchMedia("(hover: none)").matches) return;
 
-      // Detect if hovering interactive element
-      const tag = e.target?.tagName?.toLowerCase();
-      const isInteractive =
-        tag === "a" ||
-        tag === "button" ||
-        e.target?.closest("a, button, [role='button'], input, textarea");
-      setHovering(!!isInteractive);
-    };
+    const dot       = dotRef.current;
+    const ring      = ringRef.current;
+    const spotlight = spotlightRef.current;
+    if (!dot || !ring || !spotlight) return;
 
-    const onLeave = () => setVisible(false);
-
-    window.addEventListener("mousemove", onMove, { passive: true });
-    document.addEventListener("mouseleave", onLeave);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseleave", onLeave);
-    };
-  }, [visible]);
-
-  // Smooth lerp ring trailing
-  useEffect(() => {
     const lerp = (a, b, t) => a + (b - a) * t;
-    let rx = -200, ry = -200;
 
+    const onMove = (e) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+
+      // Dot: instant — set directly, no React state
+      dot.style.left    = `${e.clientX}px`;
+      dot.style.top     = `${e.clientY}px`;
+      dot.style.opacity = "1";
+      ring.style.opacity      = "1";
+      spotlight.style.opacity = "1";
+
+      // Hover state for interactive elements
+      const isInteractive = !!e.target?.closest("a, button, input, textarea, select, label, [role='button']");
+      if (isInteractive) {
+        dot.classList.add("fx-dot--hover");
+        ring.classList.add("fx-ring--hover");
+      } else {
+        dot.classList.remove("fx-dot--hover");
+        ring.classList.remove("fx-ring--hover");
+      }
+    };
+
+    const onLeave = () => {
+      dot.style.opacity       = "0";
+      ring.style.opacity      = "0";
+      spotlight.style.opacity = "0";
+    };
+
+    // rAF loop only for the smooth trailing ring + spotlight
     const tick = () => {
-      rx = lerp(rx, dotRef.current.x, 0.1);
-      ry = lerp(ry, dotRef.current.y, 0.1);
-      setRing({ x: rx, y: ry });
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      ringPosRef.current.x = lerp(ringPosRef.current.x, mx, 0.14);
+      ringPosRef.current.y = lerp(ringPosRef.current.y, my, 0.14);
+
+      const rx = ringPosRef.current.x;
+      const ry = ringPosRef.current.y;
+
+      ring.style.left      = `${rx}px`;
+      ring.style.top       = `${ry}px`;
+      spotlight.style.left = `${rx}px`;
+      spotlight.style.top  = `${ry}px`;
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
+    window.addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mouseleave", onLeave);
     rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
 
-  // Skip on touch devices
-  if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
-    return null;
-  }
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseleave", onLeave);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   return (
     <>
-      {/* ── Floating particle layer ── */}
+      {/* Floating particle layer */}
       <div className="fx-particles" aria-hidden="true">
         {PARTICLES.map((p) => (
           <div
             key={p.id}
             className="fx-particle"
             style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: p.size,
-              height: p.size,
-              opacity: p.opacity,
+              left:              `${p.x}%`,
+              top:               `${p.y}%`,
+              width:             p.size,
+              height:            p.size,
+              opacity:           p.opacity,
               animationDuration: `${p.duration}s`,
-              animationDelay: `${p.delay}s`,
+              animationDelay:    `${p.delay}s`,
             }}
           />
         ))}
       </div>
 
-      {/* ── Radial cursor spotlight on background ── */}
-      <div
-        className="fx-spotlight"
-        aria-hidden="true"
-        style={{
-          left: ring.x,
-          top: ring.y,
-          opacity: visible ? 1 : 0,
-        }}
-      />
+      {/* Radial cursor spotlight */}
+      <div ref={spotlightRef} className="fx-spotlight" aria-hidden="true" style={{ opacity: 0 }} />
 
-      {/* ── Custom cursor ring (trailing) ── */}
-      <div
-        className={`fx-ring${hovering ? " fx-ring--hover" : ""}`}
-        aria-hidden="true"
-        style={{
-          left: ring.x,
-          top: ring.y,
-          opacity: visible ? 1 : 0,
-        }}
-      />
+      {/* Trailing ring */}
+      <div ref={ringRef} className="fx-ring" aria-hidden="true" style={{ opacity: 0 }} />
 
-      {/* ── Custom cursor dot (instant) ── */}
-      <div
-        className={`fx-dot${hovering ? " fx-dot--hover" : ""}`}
-        aria-hidden="true"
-        style={{
-          left: dot.x,
-          top: dot.y,
-          opacity: visible ? 1 : 0,
-        }}
-      />
+      {/* Instant cursor dot */}
+      <div ref={dotRef} className="fx-dot" aria-hidden="true" style={{ opacity: 0 }} />
     </>
   );
 }
