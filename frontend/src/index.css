@@ -628,20 +628,6 @@
    BACKGROUND EFFECTS — cursor, spotlight, particles
    ══════════════════════════════════════════════ */
 
-/* Hide default cursor globally when custom one is active */
-body:has(.fx-dot) {
-  cursor: none !important;
-}
-body:has(.fx-dot) a,
-body:has(.fx-dot) button,
-body:has(.fx-dot) input,
-body:has(.fx-dot) textarea,
-body:has(.fx-dot) select,
-body:has(.fx-dot) label,
-body:has(.fx-dot) [role="button"] {
-  cursor: none !important;
-}
-
 /* ── Radial cursor spotlight on background ── */
 .fx-spotlight {
   position: fixed;

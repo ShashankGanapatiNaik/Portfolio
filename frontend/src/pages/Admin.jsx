@@ -66,7 +66,17 @@ function LoginForm({ onLogin }) {
       >
         {/* Logo area */}
         <div className="adm-login-logo">
-          <div className="adm-login-logo-icon">⚡</div>
+          <div className="adm-login-logo-icon" style={{ overflow: "hidden", padding: 0 }}>
+            <img
+              src={`${API_BASE}/profile/photo`}
+              alt="Shashank Naik"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentNode.innerHTML = '<span style="font-size:1.1rem;font-weight:700;color:var(--accent)">SN</span>';
+              }}
+            />
+          </div>
           <div>
             <p className="adm-login-eyebrow">Admin Portal</p>
             <h1 className="adm-login-title">Portfolio Dashboard</h1>
@@ -220,8 +230,18 @@ export default function Admin() {
       {/* ── Sidebar ── */}
       <aside className="adm-sidebar">
         <div className="adm-sidebar-logo">
-          <span className="adm-sidebar-logo-icon">⚡</span>
-          <span className="adm-sidebar-logo-text">Admin</span>
+          <div className="adm-sidebar-logo-icon" style={{ overflow: "hidden", padding: 0, borderRadius: "50%" }}>
+            <img
+              src={`${API_BASE}/profile/photo`}
+              alt="Shashank Naik"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentNode.innerHTML = '<span style="font-size:0.85rem;font-weight:700;color:var(--accent)">SN</span>';
+              }}
+            />
+          </div>
+          <span className="adm-sidebar-logo-text">Shashank Naik</span>
         </div>
 
         <nav className="adm-nav">

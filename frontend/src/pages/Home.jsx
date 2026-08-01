@@ -8,6 +8,7 @@ import GithubTracker from '../components/GithubTracker';
 import Contact from '../components/Contact';
 import Chatbot from '../components/Chatbot';
 import BackgroundEffects from '../components/BackgroundEffects';
+import Footer from '../components/Footer';
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
         <hr className="section-divider" />
         <Contact />
       </main>
+      <Footer />
       <Chatbot />
     </div>
   );

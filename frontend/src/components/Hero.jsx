@@ -32,6 +32,7 @@ export default function Hero() {
   const [photoError, setPhotoError] = useState(false);
   const [photoKey, setPhotoKey] = useState(0);
   const retryCount = useRef(0);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   // Typewriter effect
   useEffect(() => {
@@ -319,7 +320,9 @@ export default function Hero() {
                 transformStyle: "preserve-3d",
                 cursor: "pointer",
               }}
+              animate={{ rotateY: isFlipped ? 180 : undefined }}
               whileHover={{ rotateY: 180 }}
+              onTap={() => setIsFlipped((prev) => !prev)}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
               {/* FRONT: The Avatar Image */}
