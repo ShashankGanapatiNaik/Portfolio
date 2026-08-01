@@ -10,7 +10,25 @@ const githubHeaders = {
   ...(GITHUB_TOKEN && { Authorization: `Bearer ${GITHUB_TOKEN}` })
 };
 
+// ── Simple in-memory cache ────────────────────────────────────────────────────
+const cache = {};
+function getCache(key) {
+  const entry = cache[key];
+  if (!entry) return null;
+  if (Date.now() - entry.ts > 15 * 60 * 1000) { // 15-min TTL
+    delete cache[key];
+    return null;
+  }
+  return entry.data;
+}
+function setCache(key, data) {
+  cache[key] = { data, ts: Date.now() };
+}
+
 router.get('/', async (req, res) => {
+  const cached = getCache('github_main');
+  if (cached) return res.json(cached);
+
   const fetchWithHeaders = async (headers) => {
     const [userRes, reposRes] = await Promise.all([
       axios.get(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers }),
@@ -53,7 +71,7 @@ router.get('/', async (req, res) => {
     // Total stars
     const totalStars = repos.reduce((acc, r) => acc + r.stargazers_count, 0);
 
-    res.json({
+    const result = {
       username: user.login,
       name: user.name,
       bio: user.bio,
@@ -73,7 +91,10 @@ router.get('/', async (req, res) => {
         updatedAt: r.updated_at,
       })),
       profileUrl: user.html_url,
-    });
+    };
+
+    setCache('github_main', result);
+    res.json(result);
   } catch (err) {
     console.error('GitHub API error:', err.message);
     if (err.response) {
@@ -92,10 +113,13 @@ router.get('/', async (req, res) => {
 
 // Contribution calendar — uses public API, no token required
 router.get('/contributions', async (req, res) => {
+  const cached = getCache('github_contributions');
+  if (cached) return res.json(cached);
+
   try {
     const response = await axios.get(
       `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`,
-      { timeout: 10000 }
+      { timeout: 15000 }
     );
 
     const raw = response.data?.contributions; // [{ date, count, level }]
@@ -122,11 +146,15 @@ router.get('/contributions', async (req, res) => {
 
     const totalContributions = raw.reduce((sum, d) => sum + d.count, 0);
 
-    res.json({ totalContributions, weeks });
+    const result = { totalContributions, weeks };
+    setCache('github_contributions', result);
+    res.json(result);
   } catch (err) {
     console.error('Contributions API error:', err.message);
+    // Return a graceful fallback so frontend doesn't show blank
     res.status(500).json({ error: 'Failed to fetch contributions' });
   }
 });
 
 module.exports = router;
+

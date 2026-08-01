@@ -29,6 +29,9 @@ export default function Hero() {
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null);
   const pollRef = useRef(null);
+  const [photoError, setPhotoError] = useState(false);
+  const [photoKey, setPhotoKey] = useState(0);
+  const retryCount = useRef(0);
 
   // Typewriter effect
   useEffect(() => {
@@ -345,21 +348,31 @@ export default function Hero() {
                     background: "var(--bg-tertiary)",
                   }}
                 >
-                  <img
-                    src={`${API_BASE}/profile/photo`}
-                    alt="Shashank Ganapati Naik"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center top",
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      e.target.parentNode.innerHTML =
-                        '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);"><span style="font-family:Outfit,sans-serif;font-size:3.5rem;font-weight:700;color:var(--text-primary);">SN</span></div>';
-                    }}
-                  />
+                  {!photoError ? (
+                    <img
+                      key={photoKey}
+                      src={`${API_BASE}/profile/photo?t=${photoKey}`}
+                      alt="Shashank Ganapati Naik"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center top",
+                      }}
+                      onError={() => {
+                        if (retryCount.current < 3) {
+                          retryCount.current += 1;
+                          setTimeout(() => setPhotoKey((k) => k + 1), 1500);
+                        } else {
+                          setPhotoError(true);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-tertiary)" }}>
+                      <span style={{ fontFamily: "Outfit,sans-serif", fontSize: "3.5rem", fontWeight: "700", color: "var(--text-primary)" }}>SN</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { getLeetcodeData } from "../services/api";
 
 const FALLBACK = {
@@ -19,7 +19,7 @@ const FALLBACK = {
 
 const COLORS = { Easy: "#00b8a3", Medium: "#ffa116", Hard: "#ff375f" };
 
-function ConcentricProgress({ easySolved, easyTotal, mediumSolved, mediumTotal, hardSolved, hardTotal, totalSolved, isInView }) {
+function ConcentricProgress({ easySolved, easyTotal, mediumSolved, mediumTotal, hardSolved, hardTotal, totalSolved }) {
   const rEasy = 76;
   const rMed = 58;
   const rHard = 40;
@@ -48,7 +48,7 @@ function ConcentricProgress({ easySolved, easyTotal, mediumSolved, mediumTotal, 
           strokeWidth={7}
           strokeDasharray={cEasy}
           initial={{ strokeDashoffset: cEasy }}
-          animate={isInView ? { strokeDashoffset: cEasy - (cEasy * pctEasy) } : {}}
+          animate={{ strokeDashoffset: cEasy - (cEasy * pctEasy) }}
           transition={{ duration: 1.4, ease: "easeOut" }}
           strokeLinecap="round"
           style={{ filter: `drop-shadow(0 0 3px ${COLORS.Easy}66)` }}
@@ -62,7 +62,7 @@ function ConcentricProgress({ easySolved, easyTotal, mediumSolved, mediumTotal, 
           strokeWidth={7}
           strokeDasharray={cMed}
           initial={{ strokeDashoffset: cMed }}
-          animate={isInView ? { strokeDashoffset: cMed - (cMed * pctMed) } : {}}
+          animate={{ strokeDashoffset: cMed - (cMed * pctMed) }}
           transition={{ duration: 1.4, delay: 0.15, ease: "easeOut" }}
           strokeLinecap="round"
           style={{ filter: `drop-shadow(0 0 3px ${COLORS.Medium}66)` }}
@@ -76,7 +76,7 @@ function ConcentricProgress({ easySolved, easyTotal, mediumSolved, mediumTotal, 
           strokeWidth={7}
           strokeDasharray={cHard}
           initial={{ strokeDashoffset: cHard }}
-          animate={isInView ? { strokeDashoffset: cHard - (cHard * pctHard) } : {}}
+          animate={{ strokeDashoffset: cHard - (cHard * pctHard) }}
           transition={{ duration: 1.4, delay: 0.3, ease: "easeOut" }}
           strokeLinecap="round"
           style={{ filter: `drop-shadow(0 0 3px ${COLORS.Hard}66)` }}
@@ -106,8 +106,6 @@ function ConcentricProgress({ easySolved, easyTotal, mediumSolved, mediumTotal, 
 export default function LeetcodeTracker() {
   const [data, setData] = useState(FALLBACK);
   const [loading, setLoading] = useState(true);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
     getLeetcodeData()
@@ -130,27 +128,18 @@ export default function LeetcodeTracker() {
   ];
 
   return (
-    <section id="leetcode" ref={ref} className="section-container">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="section-header center">
-          <span className="section-eyebrow">04. Problem Solving</span>
-          <h2 className="section-title">LeetCode Activity</h2>
-        </div>
-      </motion.div>
+    <section id="leetcode" className="section-container">
+      <div className="section-header center">
+        <span className="section-eyebrow">04. Problem Solving</span>
+        <h2 className="section-title">LeetCode Activity</h2>
+      </div>
 
       {loading ? (
         <div className="card contrib-skeleton" style={{ height: 320 }} />
       ) : (
         <div className="grid lg:grid-cols-12 gap-8 items-stretch">
           {/* Concentric Progress Ring Ring Panel */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
+          <div
             className="lg:col-span-5 card flex flex-col justify-between"
             style={{
               background: "linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 161, 22, 0.02) 100%)",
@@ -173,7 +162,6 @@ export default function LeetcodeTracker() {
               hardSolved={data.hardSolved}
               hardTotal={data.hardTotal}
               totalSolved={data.totalSolved}
-              isInView={isInView}
             />
 
             {/* Concentric Legend labels */}
@@ -187,18 +175,15 @@ export default function LeetcodeTracker() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Stats details & progress bars */}
           <div className="lg:col-span-7 flex flex-col justify-between gap-6">
             {/* Stats grid */}
             <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat, i) => (
+              {stats.map((stat) => (
                 <motion.div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.15 + (i * 0.08) }}
                   whileHover={{ y: -4, borderColor: "var(--border-accent)" }}
                   className="card p-4 flex items-center gap-4 transition-all"
                   style={{ background: "var(--bg-secondary)", borderRadius: "8px" }}
@@ -213,10 +198,7 @@ export default function LeetcodeTracker() {
             </div>
 
             {/* Custom high-end linear progress bars */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ delay: 0.4 }}
+            <div
               className="card space-y-5"
               style={{
                 background: "var(--bg-secondary)",
@@ -234,7 +216,7 @@ export default function LeetcodeTracker() {
                     <div className="h-2.5 bg-lightest-navy rounded-full overflow-hidden relative" style={{ background: "var(--bg-primary)", border: "1px solid var(--border)" }}>
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={isInView ? { width: `${percentage}%` } : {}}
+                        animate={{ width: `${percentage}%` }}
                         transition={{ duration: 1.2, delay: 0.3 + index * 0.1, ease: "easeOut" }}
                         className="h-full rounded-full"
                         style={{
@@ -246,15 +228,10 @@ export default function LeetcodeTracker() {
                   </div>
                 );
               })}
-            </motion.div>
+            </div>
 
             {/* Action buttons */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ delay: 0.5 }}
-              className="flex justify-end"
-            >
+            <div className="flex justify-end">
               <motion.a
                 href={data.profileUrl}
                 target="_blank"
@@ -265,7 +242,7 @@ export default function LeetcodeTracker() {
               >
                 View LeetCode Profile →
               </motion.a>
-            </motion.div>
+            </div>
           </div>
         </div>
       )}

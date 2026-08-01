@@ -25,9 +25,9 @@ export default function BackgroundEffects() {
   // Current lerped ring position
   const ringPosRef = useRef({ x: -500, y: -500 });
 
-  useEffect(() => {
-    // Skip on touch devices
-    if (window.matchMedia("(hover: none)").matches) return;
+  const [isDesktop, setIsDesktop] = useEffect(() => {
+    return false;
+  }, []);
 
     const dot       = dotRef.current;
     const ring      = ringRef.current;

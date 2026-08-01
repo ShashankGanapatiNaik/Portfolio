@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { getGithubData, getGithubContributions } from "../services/api";
 
 const LEVEL_COLORS = {
@@ -17,7 +17,7 @@ const CELL = 12;   // px — cell size
 const GAP  = 3;    // px — gap between cells
 const STEP = CELL + GAP; // column/row pitch
 
-function ContributionGrid({ weeks, isInView }) {
+function ContributionGrid({ weeks }) {
   if (!weeks || weeks.length === 0) return null;
 
   // ── Month label positions ──────────────────────────────────────────────────
@@ -117,9 +117,10 @@ function ContributionGrid({ weeks, isInView }) {
             <motion.div
               key={wIdx}
               initial={{ opacity: 0, scale: 0.7, y: 5 }}
-              animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, amount: 0 }}
               transition={{
-                delay: 0.1 + (wIdx * 0.012),
+                delay: 0.05 + (wIdx * 0.012),
                 duration: 0.35,
                 type: "spring",
                 stiffness: 100,
@@ -165,37 +166,32 @@ export default function GithubTracker() {
   const [calendar, setCalendar] = useState(null);
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    Promise.all([
-      getGithubData().then((r) => setData(r.data)).catch(() => {}),
-      getGithubContributions().then((r) => setCalendar(r.data)).catch(() => {}),
-    ]).finally(() => setLoading(false));
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          getGithubData().then((r) => setData(r.data)).catch(() => {}),
+          getGithubContributions().then((r) => setCalendar(r.data)).catch(() => {}),
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   return (
     <section ref={ref} className="section-container">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="section-header left">
-          <span className="section-eyebrow">05. Open Source</span>
-          <h2 className="section-title">GitHub Activity</h2>
-        </div>
-      </motion.div>
+      <div className="section-header left">
+        <span className="section-eyebrow">05. Open Source</span>
+        <h2 className="section-title">GitHub Activity</h2>
+      </div>
 
       {loading ? (
         <div className="card contrib-skeleton" />
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="card contrib-card"
-        >
+        <div className="card contrib-card">
           {/* Header */}
           <div className="contrib-header">
             {data && (
@@ -226,7 +222,7 @@ export default function GithubTracker() {
           {/* Heatmap */}
           {calendar ? (
             <div className="contrib-scroll">
-              <ContributionGrid weeks={calendar.weeks} isInView={isInView} />
+              <ContributionGrid weeks={calendar.weeks} />
             </div>
           ) : (
             <p className="contrib-unavailable">Contribution data unavailable.</p>
@@ -249,7 +245,7 @@ export default function GithubTracker() {
             ))}
             <span>More</span>
           </div>
-        </motion.div>
+        </div>
       )}
     </section>
   );
