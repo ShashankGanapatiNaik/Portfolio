@@ -38,13 +38,17 @@ router.get('/', async (req, res) => {
       'https://leetcode.com/graphql',
       { query, variables: { username: LEETCODE_USERNAME } },
       {
+        timeout: 8000,
         headers: {
           'Content-Type': 'application/json',
           'Referer': 'https://leetcode.com',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          'Origin': 'https://leetcode.com',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'x-csrftoken': 'dummy',
         }
       }
     );
+
 
     const data = response.data?.data;
     const user = data?.matchedUser;

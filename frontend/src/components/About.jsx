@@ -40,7 +40,7 @@ export default function About() {
         </div>
       </motion.div>
 
-      <div className="grid lg:grid-cols-12 gap-12 items-start">
+      <div className="grid lg:grid-cols-12 gap-10 items-start">
         {/* Left – Story (7 cols) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,58 +49,108 @@ export default function About() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="lg:col-span-7 space-y-6"
         >
-          <div className="card space-y-4" style={{ padding: "2rem" }}>
-            <p className="text-slate leading-relaxed text-base">
+          <div className="card space-y-4" style={{ padding: "2.25rem" }}>
+            <p className="text-slate leading-relaxed text-base" style={{ color: "var(--text-secondary)" }}>
               Hey there! I'm{" "}
-              <span className="text-accent font-semibold">
+              <span style={{ color: "var(--text-primary)", fontWeight: 700 }}>
                 Shashank Ganapati Naik
               </span>
               , a Computer Science Engineering student at Reva University, Bangalore, with a passion for architecting intelligent web applications and AI solutions.
             </p>
-            <p className="text-slate leading-relaxed text-base">
-              My core technical expertise lies in building full-stack applications with <span className="text-lightest-slate font-medium">React, Node.js, Express, and MongoDB</span>, alongside exploring machine learning models using <span className="text-lightest-slate font-medium">Python & OpenCV</span>.
-            </p>
-            <p className="text-slate leading-relaxed text-base">
-              Recently, I developed an <span className="text-accent font-medium">AI Interview Behavior Analyzer</span> that processes real-time facial expressions to deliver behavioral insights — bridging computer vision with human-centric interfaces.
+
+            <p className="text-slate leading-relaxed text-base" style={{ color: "var(--text-secondary)" }}>
+              My core technical expertise lies in building full-stack applications with{" "}
+              <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+                React, Node.js, Express, and MongoDB
+              </span>
+              , alongside exploring machine learning models using{" "}
+              <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+                Python & OpenCV
+              </span>
+              .
             </p>
 
-            {/* Career Goals */}
+            <p className="text-slate leading-relaxed text-base" style={{ color: "var(--text-secondary)" }}>
+              Recently, I developed an{" "}
+              <span style={{ color: "var(--accent)", fontWeight: 600 }}>
+                AI Interview Behavior Analyzer
+              </span>{" "}
+              that processes real-time facial expressions to deliver behavioral insights — bridging computer vision with human-centric interfaces.
+            </p>
+
+            {/* Core Mission Callout */}
             <div
               style={{
                 background: "var(--accent-tint)",
                 borderLeft: "3px solid var(--accent)",
-                padding: "1rem 1.25rem",
-                borderRadius: "0 8px 8px 0",
+                padding: "1.1rem 1.35rem",
+                borderRadius: "0 10px 10px 0",
                 marginTop: "1.5rem",
               }}
             >
-              <span className="font-mono text-xs text-accent uppercase tracking-wider block mb-1 font-semibold">
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.72rem",
+                  color: "var(--accent)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  display: "block",
+                  marginBottom: "0.3rem",
+                  fontWeight: 600,
+                }}
+              >
                 Core Mission
               </span>
-              <p className="text-slate text-sm leading-relaxed" style={{ maxWidth: "none" }}>
+              <p
+                style={{
+                  color: "var(--text-primary)",
+                  fontSize: "0.875rem",
+                  lineHeight: 1.6,
+                  margin: 0,
+                  fontWeight: 400,
+                }}
+              >
                 To engineer scalable, human-centered software systems and AI tools that make complex computer systems effortless and accessible to users worldwide.
               </p>
             </div>
           </div>
 
-          {/* Interests */}
+          {/* Interests Tags */}
           <div>
-            <span className="font-mono text-xs text-accent uppercase tracking-wider block mb-3 font-semibold">
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.72rem",
+                color: "var(--accent)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                display: "block",
+                marginBottom: "0.75rem",
+                fontWeight: 600,
+              }}
+            >
               Focus Areas & Interests
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {interests.map((item) => (
-                <span
+                <motion.span
                   key={item}
-                  className="tag"
+                  whileHover={{ y: -2, borderColor: "var(--border-accent)" }}
                   style={{
-                    padding: "6px 14px",
-                    borderRadius: "6px",
+                    padding: "7px 16px",
+                    borderRadius: "8px",
                     background: "var(--bg-secondary)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-primary)",
+                    fontSize: "0.825rem",
+                    fontWeight: 500,
+                    fontFamily: "var(--font-sans)",
+                    transition: "border-color 0.2s ease, transform 0.2s ease",
                   }}
                 >
                   {item}
-                </span>
+                </motion.span>
               ))}
             </div>
           </div>
@@ -114,7 +164,17 @@ export default function About() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="lg:col-span-5 space-y-6"
         >
-          <span className="font-mono text-xs text-accent uppercase tracking-wider block font-semibold">
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "0.72rem",
+              color: "var(--accent)",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              display: "block",
+              fontWeight: 600,
+            }}
+          >
             Education
           </span>
 
@@ -124,27 +184,65 @@ export default function About() {
                 key={i}
                 whileHover={{ y: -3, borderColor: "var(--border-accent)" }}
                 className="card relative"
-                style={{ padding: "1.25rem" }}
+                style={{
+                  padding: "1.35rem",
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "14px",
+                  transition: "all 0.2s ease",
+                }}
               >
                 <div className="flex justify-between items-start mb-2 gap-2">
-                  <h3 className="text-lightest-slate font-display font-semibold text-sm leading-snug">
+                  <h3
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      color: "var(--text-primary)",
+                      lineHeight: 1.35,
+                      margin: 0,
+                    }}
+                  >
                     {edu.degree}
                   </h3>
                   <span
-                    className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded"
                     style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "0.65rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
                       background: "var(--accent-tint)",
                       color: "var(--accent)",
                       border: "1px solid var(--border-accent)",
+                      flexShrink: 0,
                     }}
                   >
                     {edu.badge}
                   </span>
                 </div>
-                <p className="text-slate text-xs font-medium">{edu.institution}</p>
-                <div className="flex justify-between items-center mt-3 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
-                  <span className="font-mono text-[11px] text-slate/70">{edu.period}</span>
-                  <span className="font-mono text-xs text-accent font-semibold">{edu.grade}</span>
+                <p
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontSize: "0.8rem",
+                    margin: "4px 0 0 0",
+                    fontWeight: 500,
+                  }}
+                >
+                  {edu.institution}
+                </p>
+
+                <div
+                  className="flex justify-between items-center mt-4 pt-3"
+                  style={{ borderTop: "1px solid var(--border)" }}
+                >
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                    {edu.period}
+                  </span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem", color: "var(--accent)", fontWeight: 700 }}>
+                    {edu.grade}
+                  </span>
                 </div>
               </motion.div>
             ))}
@@ -157,18 +255,45 @@ export default function About() {
               { label: "Projects", value: "4+" },
               { label: "Technologies", value: "15+" },
             ].map((stat) => (
-              <div
+              <motion.div
                 key={stat.label}
-                className="card text-center p-3"
-                style={{ background: "var(--bg-secondary)", borderRadius: "8px" }}
+                whileHover={{ y: -2, borderColor: "var(--border-accent)" }}
+                style={{
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "12px",
+                  padding: "1rem 0.5rem",
+                  textAlign: "center",
+                  transition: "border-color 0.2s ease",
+                }}
               >
-                <p className="font-display text-xl font-bold text-accent">
+                <p
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "1.4rem",
+                    fontWeight: 800,
+                    color: "var(--text-primary)",
+                    margin: 0,
+                    lineHeight: 1,
+                  }}
+                >
                   {stat.value}
                 </p>
-                <p className="font-mono text-[10px] text-slate mt-0.5 uppercase tracking-wider">
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.68rem",
+                    color: "var(--accent)",
+                    marginTop: "6px",
+                    marginBottom: 0,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    fontWeight: 600,
+                  }}
+                >
                   {stat.label}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -176,3 +301,4 @@ export default function About() {
     </section>
   );
 }
+

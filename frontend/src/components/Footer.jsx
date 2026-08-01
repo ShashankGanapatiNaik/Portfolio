@@ -10,15 +10,17 @@ export default function Footer() {
   ];
 
   return (
-    <footer
-      style={{
-        borderTop: "1px solid var(--border)",
-        background: "var(--bg-secondary)",
-        padding: "3rem 1.5rem 2rem",
-        marginTop: "4rem",
-      }}
-    >
-      <div style={{ maxWidth: "68rem", margin: "0 auto" }}>
+    <footer style={{ marginTop: "4rem", padding: "0 2rem" }}>
+      <div
+        style={{
+          maxWidth: "68rem",
+          margin: "0 auto",
+          padding: "3rem 2rem 2rem",
+          borderTop: "1px solid var(--border)",
+          background: "var(--bg-secondary)",
+          borderRadius: "16px 16px 0 0",
+        }}
+      >
         <div
           style={{
             display: "flex",

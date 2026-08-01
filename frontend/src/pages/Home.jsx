@@ -7,6 +7,7 @@ import LeetcodeTracker from '../components/LeetcodeTracker';
 import GithubTracker from '../components/GithubTracker';
 import Contact from '../components/Contact';
 import Chatbot from '../components/Chatbot';
+import CommandPalette from '../components/CommandPalette';
 import BackgroundEffects from '../components/BackgroundEffects';
 import Footer from '../components/Footer';
 
@@ -34,7 +35,9 @@ export default function Home() {
       </main>
       <Footer />
       <Chatbot />
+      <CommandPalette />
     </div>
   );
 }
+
 

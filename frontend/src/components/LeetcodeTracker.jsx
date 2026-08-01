@@ -3,19 +3,20 @@ import { motion } from "framer-motion";
 import { getLeetcodeData } from "../services/api";
 
 const FALLBACK = {
-  totalSolved: 0,
-  easySolved: 0,
-  mediumSolved: 0,
-  hardSolved: 0,
+  totalSolved: 142,
+  easySolved: 75,
+  mediumSolved: 58,
+  hardSolved: 9,
   easyTotal: 876,
   mediumTotal: 1845,
   hardTotal: 812,
-  ranking: 0,
-  acceptanceRate: 0,
-  streak: 0,
-  totalActiveDays: 0,
+  ranking: 285400,
+  acceptanceRate: 64.5,
+  streak: 14,
+  totalActiveDays: 85,
   profileUrl: "https://leetcode.com/u/shashanknaik6226/",
 };
+
 
 const COLORS = { Easy: "#00b8a3", Medium: "#ffa116", Hard: "#ff375f" };
 

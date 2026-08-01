@@ -2,15 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { sendChatMessage } from "../services/api";
 
-const QUICK_QUESTIONS = [
-  "What projects has he built?",
-  "What skills does he have?",
-  "Tell me about his AI project",
-  "How to download his resume?",
+const CATEGORIES = [
+  { label: "📁 Projects", prompt: "Tell me about Shashank's top projects" },
+  { label: "⚡ Skills", prompt: "What technologies and languages does he know?" },
+  { label: "🎓 Education", prompt: "Where does he study and what is his CGPA?" },
+  { label: "📄 Resume", prompt: "How can I download his resume or contact him?" },
 ];
 
-const BOT_AVATAR = "🤖";
-const USER_AVATAR = "👤";
+const AVATAR_URL = "https://github.com/ShashankGanapatiNaik.png";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,16 +17,17 @@ export default function Chatbot() {
     {
       role: "assistant",
       content:
-        "Hi! I'm Shashank's AI portfolio assistant 👋\n\nI can answer questions about his skills, projects, experience, and more. What would you like to know?",
+        "Hi! I'm Shashank's AI assistant 👋\n\nAsk me anything about his projects, technical skills, education, or experience!",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isOpen]);
+  }, [messages, isOpen, loading]);
 
   const sendMessage = async (text) => {
     const msg = text || input.trim();
@@ -53,12 +53,18 @@ export default function Chatbot() {
         {
           role: "assistant",
           content:
-            "Sorry, I'm having trouble connecting. Please try again or email shashankng626@gmail.com directly!",
+            "I'm having trouble connecting right now. Please reach out to Shashank directly at shashankng626@gmail.com!",
         },
       ]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopy = (text, index) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
   };
 
   const handleKeyDown = (e) => {
@@ -70,105 +76,264 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Chat Window */}
+      {/* Floating Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-24 right-6 w-80 md:w-96 z-50 flex flex-col"
-            style={{ maxHeight: "70vh" }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            style={{
+              position: "fixed",
+              bottom: "85px",
+              right: "24px",
+              width: "clamp(320px, 92vw, 400px)",
+              height: "clamp(480px, 75vh, 580px)",
+              zIndex: 9999,
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
             <div
-              className="bg-light-navy border border-lightest-navy rounded-2xl shadow-2xl shadow-black/50 flex flex-col overflow-hidden"
-              style={{ maxHeight: "70vh" }}
+              style={{
+                background: "var(--bg-secondary)",
+                border: "1px solid var(--border-accent)",
+                borderRadius: "20px",
+                boxShadow: "0 24px 60px rgba(0, 0, 0, 0.45)",
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                overflow: "hidden",
+                backdropFilter: "blur(20px)",
+              }}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 bg-navy border-b border-lightest-navy">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-9 h-9 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-lg">
-                      🤖
-                    </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-navy" />
+              {/* Top Header */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "14px 18px",
+                  background: "var(--bg-primary)",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ position: "relative" }}>
+                    <img
+                      src={AVATAR_URL}
+                      alt="Shashank AI"
+                      style={{
+                        width: "38px",
+                        height: "38px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "2px solid var(--border-accent)",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: "0",
+                        right: "0",
+                        width: "10px",
+                        height: "10px",
+                        borderRadius: "50%",
+                        background: "#10b981",
+                        border: "2px solid var(--bg-primary)",
+                        boxShadow: "0 0 6px #10b981",
+                      }}
+                    />
                   </div>
                   <div>
-                    <p className="font-display font-semibold text-lightest-slate text-sm">
-                      Portfolio Assistant
-                    </p>
-                    <p className="font-mono text-xs text-accent">
-                      AI Powered • Online
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <h3
+                        style={{
+                          fontFamily: "var(--font-sans)",
+                          fontWeight: 700,
+                          fontSize: "0.92rem",
+                          color: "var(--text-primary)",
+                          margin: 0,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        Shashank's AI Assistant
+                      </h3>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "0.7rem",
+                        color: "var(--accent)",
+                        margin: 0,
+                        marginTop: "2px",
+                      }}
+                    >
+                      ● Online • Ask anything
                     </p>
                   </div>
                 </div>
+
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-slate hover:text-accent p-1 transition-colors"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--text-secondary)",
+                    cursor: "pointer",
+                    padding: "6px",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              {/* Messages */}
+              {/* Messages Body */}
               <div
-                className="flex-1 overflow-y-auto p-4 space-y-3"
-                style={{ minHeight: 0 }}
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "14px",
+                }}
               >
-                {messages.map((msg, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-                  >
-                    <div className="w-7 h-7 rounded-full bg-lightest-navy flex items-center justify-center text-sm flex-shrink-0">
-                      {msg.role === "user" ? USER_AVATAR : BOT_AVATAR}
-                    </div>
-                    <div
-                      className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                        msg.role === "user"
-                          ? "bg-accent/20 border border-accent/30 text-lightest-slate rounded-tr-sm"
-                          : "bg-navy border border-lightest-navy text-slate rounded-tl-sm"
-                      }`}
+                {messages.map((msg, i) => {
+                  const isUser = msg.role === "user";
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: isUser ? "flex-end" : "flex-start",
+                        gap: "4px",
+                      }}
                     >
-                      {msg.content}
-                    </div>
-                  </motion.div>
-                ))}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "8px",
+                          flexDirection: isUser ? "row-reverse" : "row",
+                          maxWidth: "100%",
+                        }}
+                      >
+                        {!isUser && (
+                          <img
+                            src={AVATAR_URL}
+                            alt="AI"
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              flexShrink: 0,
+                              marginTop: "2px",
+                              border: "1px solid var(--border-accent)",
+                            }}
+                          />
+                        )}
+
+                        <div
+                          style={{
+                            maxWidth: "84%",
+                            padding: "11px 15px",
+                            borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                            fontSize: "0.85rem",
+                            lineHeight: 1.55,
+                            fontFamily: "var(--font-sans)",
+                            whiteSpace: "pre-wrap",
+                            background: isUser ? "var(--text-primary)" : "var(--bg-primary)",
+                            color: isUser ? "var(--bg-primary)" : "var(--text-primary)",
+                            border: isUser ? "1px solid var(--text-primary)" : "1px solid var(--border)",
+                            position: "relative",
+                          }}
+                        >
+                          {msg.content}
+                        </div>
+                      </div>
+
+                      {!isUser && i > 0 && (
+                        <button
+                          onClick={() => handleCopy(msg.content, i)}
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: "0.68rem",
+                            color: copiedIndex === i ? "var(--accent)" : "var(--text-secondary)",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "2px 6px",
+                            marginLeft: "32px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          {copiedIndex === i ? "✓ Copied" : "📋 Copy response"}
+                        </button>
+                      )}
+                    </motion.div>
+                  );
+                })}
+
                 {loading && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex gap-2"
+                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
                   >
-                    <div className="w-7 h-7 rounded-full bg-lightest-navy flex items-center justify-center text-sm">
-                      {BOT_AVATAR}
-                    </div>
-                    <div className="bg-navy border border-lightest-navy rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
-                      {[0, 1, 2].map((i) => (
+                    <img
+                      src={AVATAR_URL}
+                      alt="AI"
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "1px solid var(--border-accent)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        background: "var(--bg-primary)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "16px 16px 16px 4px",
+                        padding: "10px 14px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      {[0, 1, 2].map((dot) => (
                         <motion.div
-                          key={i}
-                          animate={{ y: [0, -5, 0] }}
+                          key={dot}
+                          animate={{ y: [0, -4, 0] }}
                           transition={{
                             duration: 0.6,
-                            delay: i * 0.15,
+                            delay: dot * 0.15,
                             repeat: Infinity,
                           }}
-                          className="w-1.5 h-1.5 bg-accent rounded-full"
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "50%",
+                            background: "var(--accent)",
+                          }}
                         />
                       ))}
                     </div>
@@ -177,51 +342,100 @@ export default function Chatbot() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Questions */}
-              {messages.length <= 1 && (
-                <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-                  {QUICK_QUESTIONS.map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => sendMessage(q)}
-                      className="text-xs font-mono text-accent border border-accent/30 rounded-full px-2.5 py-1 hover:bg-accent/10 transition-colors"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Quick Topic Chips */}
+              <div
+                style={{
+                  padding: "8px 14px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                  borderTop: "1px solid var(--border)",
+                  background: "var(--bg-primary)",
+                }}
+              >
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.label}
+                    onClick={() => sendMessage(cat.prompt)}
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: "0.74rem",
+                      fontWeight: 500,
+                      color: "var(--text-primary)",
+                      background: "var(--bg-secondary)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "8px",
+                      padding: "4px 10px",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "var(--border-accent)";
+                      e.currentTarget.style.color = "var(--accent)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "var(--border)";
+                      e.currentTarget.style.color = "var(--text-primary)";
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
 
-              {/* Input */}
-              <div className="px-4 py-3 border-t border-lightest-navy flex gap-2">
+              {/* Input Footer */}
+              <div
+                style={{
+                  padding: "12px 14px",
+                  borderTop: "1px solid var(--border)",
+                  background: "var(--bg-primary)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask me anything..."
-                  className="flex-1 bg-navy border border-lightest-navy rounded-xl px-3 py-2 text-sm text-lightest-slate placeholder-slate focus:outline-none focus:border-accent/50 transition-colors"
+                  placeholder="Ask a question..."
                   disabled={loading}
+                  style={{
+                    flex: 1,
+                    background: "var(--bg-secondary)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "10px",
+                    padding: "9px 12px",
+                    fontSize: "0.83rem",
+                    color: "var(--text-primary)",
+                    fontFamily: "var(--font-sans)",
+                    outline: "none",
+                  }}
                 />
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => sendMessage()}
                   disabled={loading || !input.trim()}
-                  className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "10px",
+                    background: input.trim() ? "var(--text-primary)" : "var(--border)",
+                    color: input.trim() ? "var(--bg-primary)" : "var(--text-secondary)",
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: input.trim() ? "pointer" : "default",
+                    transition: "all 0.2s ease",
+                    flexShrink: 0,
+                  }}
                 >
-                  <svg
-                    className="w-4 h-4 text-navy"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
+                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 2L11 13" />
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" />
                   </svg>
                 </motion.button>
               </div>
@@ -234,23 +448,28 @@ export default function Chatbot() {
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 2, type: "spring" }}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.93 }}
+        transition={{ delay: 1, type: "spring" }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center"
         style={{
+          position: "fixed",
+          bottom: "24px",
+          right: "24px",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           background: "var(--bg-secondary)",
-          border: "1px solid var(--border)",
-          borderRadius: isOpen ? "50%" : "50px",
-          padding: isOpen ? "0" : "0 18px",
-          height: "52px",
-          minWidth: "52px",
-          boxShadow: "none",
-          transition:
-            "border-radius 0.3s ease, padding 0.3s ease, min-width 0.3s ease",
+          border: "1px solid var(--border-accent)",
+          borderRadius: "99px",
+          padding: isOpen ? "0" : "0 16px",
+          height: "48px",
+          minWidth: "48px",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
           gap: "8px",
           cursor: "pointer",
+          backdropFilter: "blur(12px)",
         }}
       >
         <AnimatePresence mode="wait">
@@ -261,26 +480,15 @@ export default function Chatbot() {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: 90, opacity: 0 }}
               style={{
-                width: 52,
-                height: 52,
+                width: 48,
+                height: 48,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="var(--text-primary)"
-                strokeWidth="2.5"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg width="18" height="18" fill="none" stroke="var(--text-primary)" strokeWidth="2.2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </motion.div>
           ) : (
@@ -291,48 +499,24 @@ export default function Chatbot() {
               exit={{ scale: 0, opacity: 0 }}
               style={{ display: "flex", alignItems: "center", gap: "8px" }}
             >
-              {/* AI Brain Icon */}
-              <div
+              <img
+                src={AVATAR_URL}
+                alt="AI"
                 style={{
-                  width: 28,
-                  height: 28,
+                  width: "24px",
+                  height: "24px",
                   borderRadius: "50%",
-                  background: "var(--accent-tint)",
-                  border: "1px solid var(--border)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
+                  objectFit: "cover",
+                  border: "1px solid var(--border-accent)",
                 }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
-                    fill="var(--bg-secondary)"
-                  />
-                  <circle cx="8.5" cy="10" r="1.5" fill="var(--text-primary)" />
-                  <circle cx="15.5" cy="10" r="1.5" fill="var(--text-primary)" />
-                  <path
-                    d="M8.5 14.5c1 1.5 5.5 1.5 7 0"
-                    stroke="var(--text-primary)"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M12 2v2M12 20v2M2 12h2M20 12h2"
-                    stroke="var(--text-primary)"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                    opacity="0.5"
-                  />
-                </svg>
-              </div>
+              />
               <span
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "13px",
-                  fontWeight: "500",
+                  fontSize: "12px",
+                  fontWeight: "600",
                   color: "var(--text-primary)",
+                  letterSpacing: "0.02em",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -345,3 +529,5 @@ export default function Chatbot() {
     </>
   );
 }
+
+

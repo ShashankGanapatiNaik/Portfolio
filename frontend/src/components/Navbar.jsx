@@ -158,7 +158,42 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Right Side Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
+          <button
+            onClick={() => {
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true })
+              );
+            }}
+            title="Open Command Palette (Ctrl + K)"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "0.4rem 0.75rem",
+              borderRadius: "8px",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border)",
+              color: "var(--text-secondary)",
+              fontSize: "0.75rem",
+              fontFamily: "var(--font-mono)",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-accent)";
+              e.currentTarget.style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+            }}
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Ctrl K</span>
+          </button>
           <ThemeToggle />
           <a
             href="/admin"

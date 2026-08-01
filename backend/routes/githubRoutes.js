@@ -5,10 +5,13 @@ const axios = require('axios');
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'ShashankGanapatiNaik';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN && process.env.GITHUB_TOKEN !== 'undefined' && process.env.GITHUB_TOKEN.trim() !== '' ? process.env.GITHUB_TOKEN : null;
 
+console.log(`[GitHub] Username: ${GITHUB_USERNAME} | Token loaded: ${GITHUB_TOKEN ? '✅ YES' : '❌ NO (unauthenticated, rate limits apply)'}`);
+
 const githubHeaders = {
   'Accept': 'application/vnd.github.v3+json',
   ...(GITHUB_TOKEN && { Authorization: `Bearer ${GITHUB_TOKEN}` })
 };
+
 
 // ── Simple in-memory cache ────────────────────────────────────────────────────
 const cache = {};
