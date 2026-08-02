@@ -4,7 +4,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 import {
   loginAdmin, getProjects, createProject, updateProject, deleteProject,
-  getSkills, createSkillCategory, deleteSkillCategory,
+  getSkills, createSkillCategory, updateSkillCategory, deleteSkillCategory,
   getMessages, markMessageRead, deleteMessage, uploadResume,
 } from "../services/api";
 import toast from "react-hot-toast";
@@ -158,6 +158,8 @@ export default function Admin() {
     title: "", description: "", techStack: "", githubLink: "", liveDemo: "", featured: false,
   });
   const [skills, setSkills] = useState([]);
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [skillForm, setSkillForm] = useState({ category: "", skills: "" });
   const [messages, setMessages] = useState([]);
 
   const loadData = async () => {
@@ -199,6 +201,58 @@ export default function Admin() {
   const handleEditProject = (project) => {
     setEditingProject(project);
     setProjectForm({ ...project, techStack: project.techStack?.join(", ") || "" });
+  };
+
+  const handleSkillSubmit = async (e) => {
+    e.preventDefault();
+    if (!skillForm.category.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
+    const parsedSkills = skillForm.skills
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(name => ({ name }));
+
+    const payload = {
+      category: skillForm.category.trim(),
+      skills: parsedSkills,
+    };
+
+    try {
+      if (editingSkill) {
+        await updateSkillCategory(editingSkill._id, payload);
+        toast.success("Skill category updated!");
+      } else {
+        await createSkillCategory(payload);
+        toast.success("Skill category created!");
+      }
+      setSkillForm({ category: "", skills: "" });
+      setEditingSkill(null);
+      loadData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to save skill category");
+    }
+  };
+
+  const handleEditSkill = (skillCat) => {
+    setEditingSkill(skillCat);
+    setSkillForm({
+      category: skillCat.category || "",
+      skills: skillCat.skills?.map(s => s.name).join(", ") || "",
+    });
+  };
+
+  const handleDeleteSkill = async (id) => {
+    if (!confirm("Delete this skill category?")) return;
+    try {
+      await deleteSkillCategory(id);
+      toast.success("Skill category deleted!");
+      loadData();
+    } catch {
+      toast.error("Failed to delete skill category");
+    }
   };
 
   const handleMarkRead  = async (id) => { await markMessageRead(id); loadData(); };
@@ -534,32 +588,99 @@ export default function Admin() {
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
                 className="adm-tab-body">
-                <div className="adm-list">
-                  {skills.map((s, i) => (
-                    <motion.div key={s._id}
-                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="adm-list-item">
-                      <div className="adm-list-item-accent" />
-                      <div className="adm-list-item-body">
-                        <div className="adm-list-item-top">
-                          <div>
-                            <h3 className="adm-list-item-title">{s.category}</h3>
-                            <div className="adm-list-chips" style={{ marginTop: 6 }}>
-                              {s.skills?.map(sk => (
-                                <span key={sk.name} className="adm-chip">{sk.name}</span>
-                              ))}
+
+                {/* ── Add / Edit Form ── */}
+                <div className="adm-card">
+                  <div className="adm-card-header">
+                    <h2 className="adm-card-title">
+                      {editingSkill ? "✏️ Edit Skill Category" : "➕ Add Skill Category"}
+                    </h2>
+                    {editingSkill && (
+                      <button className="adm-btn-ghost"
+                        onClick={() => { setEditingSkill(null); setSkillForm({ category: "", skills: "" }); }}>
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleSkillSubmit} className="adm-form-grid">
+                    <div className="adm-field adm-col-2">
+                      <label className="adm-label">Category Name *</label>
+                      <input
+                        value={skillForm.category}
+                        onChange={e => setSkillForm(f => ({ ...f, category: e.target.value }))}
+                        className="adm-input"
+                        placeholder="e.g. Frontend Technologies"
+                        required
+                      />
+                    </div>
+
+                    <div className="adm-field adm-col-2">
+                      <label className="adm-label">
+                        Skills <span className="adm-label-hint">(comma-separated)</span>
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={skillForm.skills}
+                        onChange={e => setSkillForm(f => ({ ...f, skills: e.target.value }))}
+                        className="adm-input adm-textarea"
+                        placeholder="React.js, TypeScript, CSS3, HTML5"
+                      />
+                    </div>
+
+                    <div className="adm-field adm-col-2">
+                      <button type="submit" className="adm-btn-primary" style={{ width: "fit-content" }}>
+                        {editingSkill ? "Update Category" : "Create Category"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* ── Skill Category List ── */}
+                {skills.length === 0 ? (
+                  <div className="adm-empty">
+                    <div className="adm-empty-icon">🛠️</div>
+                    <p>No skill categories yet. Add one above!</p>
+                  </div>
+                ) : (
+                  <div className="adm-list">
+                    {skills.map((s, i) => (
+                      <motion.div key={s._id}
+                        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="adm-list-item">
+                        <div className="adm-list-item-accent" />
+                        <div className="adm-list-item-body">
+                          <div className="adm-list-item-top">
+                            <div>
+                              <div className="adm-list-item-title-row">
+                                <h3 className="adm-list-item-title">{s.category}</h3>
+                                <span className="adm-featured-pill">{s.skills?.length || 0} skills</span>
+                              </div>
+                              <div className="adm-list-chips" style={{ marginTop: 6 }}>
+                                {s.skills?.map(sk => (
+                                  <span key={sk.name} className="adm-chip">{sk.name}</span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="adm-list-item-actions">
+                              <button
+                                onClick={() => handleEditSkill(s)}
+                                className="adm-action-btn adm-action-edit">
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSkill(s._id)}
+                                className="adm-action-btn adm-action-delete">
+                                Delete
+                              </button>
                             </div>
                           </div>
-                          <div className="adm-list-item-actions">
-                            <button onClick={async () => { await deleteSkillCategory(s._id); loadData(); }}
-                              className="adm-action-btn adm-action-delete">Delete</button>
-                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
