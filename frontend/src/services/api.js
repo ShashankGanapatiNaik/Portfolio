@@ -52,6 +52,9 @@ export const getGithubContributions = () => api.get("/github/contributions");
 // LeetCode
 export const getLeetcodeData = () => api.get("/leetcode");
 
+// Codolio (aggregates LeetCode + Codeforces)
+export const getCodolioData = () => api.get("/codolio");
+
 // Chatbot
 export const sendChatMessage = (message, history) =>
   api.post("/chat", { message, history });

@@ -3,7 +3,7 @@ import Hero from '../components/Hero';
 import About from '../components/About';
 import Skills from '../components/Skills';
 import Projects from '../components/Projects';
-import LeetcodeTracker from '../components/LeetcodeTracker';
+import CodolioTracker from '../components/CodolioTracker';
 import GithubTracker from '../components/GithubTracker';
 import Contact from '../components/Contact';
 import Chatbot from '../components/Chatbot';
@@ -26,7 +26,7 @@ export default function Home() {
         <Projects />
         <hr className="section-divider" />
         <section id="stats">
-          <LeetcodeTracker />
+          <CodolioTracker />
           <hr className="section-divider" />
           <GithubTracker />
         </section>

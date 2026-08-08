@@ -6,7 +6,7 @@ const navLinks = [
   { label: "About", href: "#about" },
   { label: "Skills", href: "#skills" },
   { label: "Projects", href: "#projects" },
-  { label: "LeetCode", href: "#leetcode" },
+  { label: "Codolio", href: "#codolio" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -20,7 +20,7 @@ export default function Navbar() {
       setScrolled(window.scrollY > 40);
 
       // Section highlight logic
-      const sections = ["about", "skills", "projects", "leetcode", "contact"];
+      const sections = ["about", "skills", "projects", "codolio", "contact"];
       const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
