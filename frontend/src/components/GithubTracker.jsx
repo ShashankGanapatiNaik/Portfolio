@@ -20,51 +20,61 @@ const STEP = CELL + GAP; // column/row pitch
 function ContributionGrid({ weeks }) {
   if (!weeks || weeks.length === 0) return null;
 
-  // ── Month label positions ──────────────────────────────────────────────────
-  // Walk each week; when the first day's month changes, record it.
-  const monthLabels = [];
+  const MONTH_GAP = 6; // extra px gap between months
+
+  // Determine month for each week and compute X offsets with month gaps
+  const weekMeta = [];
   let lastMonth = -1;
+  let xOffset = 0;
   weeks.forEach((week, wIdx) => {
     const firstDay = week.contributionDays[0];
     if (!firstDay) return;
     const m = new Date(firstDay.date + "T00:00:00").getMonth();
-    if (m !== lastMonth) {
-      monthLabels.push({
-        wIdx,
-        label: new Date(firstDay.date + "T00:00:00").toLocaleString("default", { month: "short" }),
-      });
-      lastMonth = m;
+    const isNewMonth = m !== lastMonth;
+    if (isNewMonth && lastMonth !== -1) {
+      xOffset += MONTH_GAP;
     }
+    weekMeta.push({ wIdx, x: xOffset, month: m, isNewMonth });
+    xOffset += STEP;
+    lastMonth = m;
   });
 
-  const totalWeeks = weeks.length;
-  const gridWidth  = totalWeeks * STEP - GAP;
+  // Build month labels from weekMeta
+  const monthLabels = weekMeta
+    .filter((w) => w.isNewMonth || w.wIdx === 0)
+    .map((w) => ({
+      x: w.x,
+      label: new Date(weeks[w.wIdx].contributionDays[0].date + "T00:00:00").toLocaleString("default", { month: "short" }),
+    }));
+
+  const gridWidth = xOffset - GAP;
   const gridHeight = 7 * STEP - GAP;
 
-  const DAY_COL_W = 28; // px reserved for Mon/Wed/Fri labels
-  const MONTH_ROW_H = 18; // px reserved for month labels above grid
+  const DAY_COL_W = 28;
+  const MONTH_ROW_H = 18;
 
   return (
     <div
       className="contrib-graph"
       style={{
         display: "grid",
-        gridTemplateColumns: `${DAY_COL_W}px 1fr`,
+        gridTemplateColumns: `${DAY_COL_W}px ${gridWidth}px`,
         gridTemplateRows: `${MONTH_ROW_H}px 1fr`,
         gap: 0,
+        width: "fit-content",
       }}
     >
       {/* ── Top-left corner (empty) ── */}
       <div />
 
       {/* ── Month labels row ── */}
-      <div style={{ position: "relative", height: MONTH_ROW_H }}>
-        {monthLabels.map(({ wIdx, label }) => (
+      <div style={{ position: "relative", height: MONTH_ROW_H, width: gridWidth }}>
+        {monthLabels.map(({ x, label }, i) => (
           <span
-            key={label + wIdx}
+            key={label + i}
             style={{
               position: "absolute",
-              left: wIdx * STEP,
+              left: x,
               bottom: 4,
               fontSize: 11,
               fontFamily: "var(--font-mono)",
@@ -110,8 +120,8 @@ function ContributionGrid({ weeks }) {
 
       {/* ── Heatmap cells with staggered flow animation ── */}
       <div style={{ position: "relative", width: gridWidth, height: gridHeight }}>
-        {weeks.map((week, wIdx) => {
-          // Pad first incomplete week so days start on the correct row
+        {weekMeta.map(({ wIdx, x }) => {
+          const week = weeks[wIdx];
           const padCount = wIdx === 0 ? 7 - week.contributionDays.length : 0;
           return (
             <motion.div
@@ -120,11 +130,11 @@ function ContributionGrid({ weeks }) {
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               viewport={{ once: true, amount: 0 }}
               transition={{
-                delay: 0.05 + (wIdx * 0.012),
+                delay: 0.05 + wIdx * 0.012,
                 duration: 0.35,
                 type: "spring",
                 stiffness: 100,
-                damping: 15
+                damping: 15,
               }}
             >
               {week.contributionDays.map((day, dIdx) => {
@@ -136,7 +146,7 @@ function ContributionGrid({ weeks }) {
                     className="contrib-cell"
                     style={{
                       position: "absolute",
-                      left: wIdx * STEP,
+                      left: x,
                       top: row * STEP,
                       width: CELL,
                       height: CELL,
@@ -217,7 +227,7 @@ export default function GithubTracker() {
 
 
   return (
-    <section ref={ref} className="section-container">
+    <section id="github" ref={ref} className="section-container">
       <div className="section-header left">
         <span className="section-eyebrow">05. Open Source</span>
         <h2 className="section-title">GitHub Activity</h2>

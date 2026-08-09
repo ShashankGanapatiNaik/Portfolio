@@ -19,23 +19,34 @@ const STEP = CELL + GAP;
 function ContributionGrid({ weeks }) {
   if (!weeks || weeks.length === 0) return null;
 
-  const monthLabels = [];
+  const MONTH_GAP = 6; // extra px gap between months
+
+  // Determine month for each week and compute X offsets with month gaps
+  const weekMeta = [];
   let lastMonth = -1;
+  let xOffset = 0;
   weeks.forEach((week, wIdx) => {
     const firstDay = week.contributionDays[0];
     if (!firstDay) return;
     const m = new Date(firstDay.date + "T00:00:00").getMonth();
-    if (m !== lastMonth) {
-      monthLabels.push({
-        wIdx,
-        label: new Date(firstDay.date + "T00:00:00").toLocaleString("default", { month: "short" }),
-      });
-      lastMonth = m;
+    const isNewMonth = m !== lastMonth;
+    if (isNewMonth && lastMonth !== -1) {
+      xOffset += MONTH_GAP; // add gap before new month starts
     }
+    weekMeta.push({ wIdx, x: xOffset, month: m, isNewMonth });
+    xOffset += STEP;
+    lastMonth = m;
   });
 
-  const totalWeeks = weeks.length;
-  const gridWidth = totalWeeks * STEP - GAP;
+  // Build month labels from weekMeta
+  const monthLabels = weekMeta
+    .filter((w) => w.isNewMonth || w.wIdx === 0)
+    .map((w) => ({
+      x: w.x,
+      label: new Date(weeks[w.wIdx].contributionDays[0].date + "T00:00:00").toLocaleString("default", { month: "short" }),
+    }));
+
+  const gridWidth = xOffset - GAP;
   const gridHeight = 7 * STEP - GAP;
 
   const DAY_COL_W = 28;
@@ -46,20 +57,21 @@ function ContributionGrid({ weeks }) {
       className="contrib-graph"
       style={{
         display: "grid",
-        gridTemplateColumns: `${DAY_COL_W}px 1fr`,
+        gridTemplateColumns: `${DAY_COL_W}px ${gridWidth}px`,
         gridTemplateRows: `${MONTH_ROW_H}px 1fr`,
         gap: 0,
+        width: "fit-content",
       }}
     >
       <div />
 
-      <div style={{ position: "relative", height: MONTH_ROW_H }}>
-        {monthLabels.map(({ wIdx, label }) => (
+      <div style={{ position: "relative", height: MONTH_ROW_H, width: gridWidth }}>
+        {monthLabels.map(({ x, label }, i) => (
           <span
-            key={label + wIdx}
+            key={label + i}
             style={{
               position: "absolute",
-              left: wIdx * STEP,
+              left: x,
               bottom: 4,
               fontSize: 11,
               fontFamily: "var(--font-mono)",
@@ -103,7 +115,8 @@ function ContributionGrid({ weeks }) {
       </div>
 
       <div style={{ position: "relative", width: gridWidth, height: gridHeight }}>
-        {weeks.map((week, wIdx) => {
+        {weekMeta.map(({ wIdx, x }) => {
+          const week = weeks[wIdx];
           const padCount = wIdx === 0 ? 7 - week.contributionDays.length : 0;
           return (
             <motion.div
@@ -128,7 +141,7 @@ function ContributionGrid({ weeks }) {
                     className="contrib-cell"
                     style={{
                       position: "absolute",
-                      left: wIdx * STEP,
+                      left: x,
                       top: row * STEP,
                       width: CELL,
                       height: CELL,

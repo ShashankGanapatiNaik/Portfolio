@@ -1485,3 +1485,26 @@
   .adm-header-stats { display: none; }
   .adm-content { padding: 1rem; }
 }
+
+/* ── Heatmap scroll container ── */
+.contrib-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+.contrib-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.contrib-scroll::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 2px;
+}
+.contrib-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-accent);
+  border-radius: 2px;
+}
+
