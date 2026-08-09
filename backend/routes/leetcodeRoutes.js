@@ -25,6 +25,7 @@ router.get('/', async (req, res) => {
           streak: userCalendar {
             streak
             totalActiveDays
+            submissionCalendar
           }
         }
         allQuestionsCount {
@@ -70,6 +71,17 @@ router.get('/', async (req, res) => {
       ? ((totalSolved / totalSubmissions) * 100).toFixed(1)
       : 0;
 
+    let submissionCalendar = {};
+    if (user.streak?.submissionCalendar) {
+      try {
+        submissionCalendar = typeof user.streak.submissionCalendar === 'string'
+          ? JSON.parse(user.streak.submissionCalendar)
+          : user.streak.submissionCalendar;
+      } catch (e) {
+        console.error('Failed to parse submissionCalendar', e);
+      }
+    }
+
     res.json({
       username: LEETCODE_USERNAME,
       totalSolved,
@@ -83,6 +95,7 @@ router.get('/', async (req, res) => {
       acceptanceRate: parseFloat(acceptanceRate),
       streak: user.streak?.streak || 0,
       totalActiveDays: user.streak?.totalActiveDays || 0,
+      submissionCalendar,
       profileUrl: `https://leetcode.com/u/${LEETCODE_USERNAME}/`,
     });
   } catch (err) {
@@ -101,6 +114,7 @@ router.get('/', async (req, res) => {
       acceptanceRate: 64.5,
       streak: 14,
       totalActiveDays: 85,
+      submissionCalendar: {},
       profileUrl: `https://leetcode.com/u/${LEETCODE_USERNAME}/`,
     });
   }

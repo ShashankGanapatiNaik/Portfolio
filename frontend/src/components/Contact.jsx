@@ -215,48 +215,6 @@ export default function Contact() {
           </form>
         </motion.div>
       </div>
-
-      {/* Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ delay: 0.6 }}
-        className="text-center mt-20 pt-8 border-t border-border flex flex-col items-center gap-4"
-      >
-        <div className="flex items-center gap-6">
-          <a
-            href="https://github.com/ShashankGanapatiNaik"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate hover:text-accent transition-colors"
-            title="GitHub"
-            style={{ fontSize: "18px" }}
-          >
-            🐙
-          </a>
-          <a
-            href="https://www.linkedin.com/in/shashank-naik-6b449428a"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate hover:text-accent transition-colors"
-            title="LinkedIn"
-            style={{ fontSize: "18px" }}
-          >
-            💼
-          </a>
-          <a
-            href="mailto:shashankng626@gmail.com"
-            className="text-slate hover:text-accent transition-colors"
-            title="Email"
-            style={{ fontSize: "18px" }}
-          >
-            ✉️
-          </a>
-        </div>
-        <p className="font-mono text-[13px] text-slate">
-          © {new Date().getFullYear()} Shashank Ganapati Naik. All rights reserved.
-        </p>
-      </motion.div>
     </section>
   );
 }

@@ -86,10 +86,12 @@ export default function Chatbot() {
             transition={{ type: "spring", stiffness: 350, damping: 28 }}
             style={{
               position: "fixed",
-              bottom: "85px",
-              right: "24px",
-              width: "clamp(320px, 92vw, 400px)",
-              height: "clamp(480px, 75vh, 580px)",
+              bottom: "78px",
+              right: "16px",
+              width: "calc(100vw - 32px)",
+              maxWidth: "380px",
+              height: "clamp(420px, 70vh, 540px)",
+              maxHeight: "calc(100vh - 96px)",
               zIndex: 9999,
               display: "flex",
               flexDirection: "column",
@@ -454,8 +456,8 @@ export default function Chatbot() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: "fixed",
-          bottom: "24px",
-          right: "24px",
+          bottom: "18px",
+          right: "16px",
           zIndex: 9999,
           display: "flex",
           alignItems: "center",
