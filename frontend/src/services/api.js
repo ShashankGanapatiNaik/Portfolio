@@ -14,6 +14,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle 401 Unauthorized (invalid/expired token)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("adminToken");
+      window.dispatchEvent(new Event("admin-logout"));
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Profile
 export const getProfile = () => api.get("/profile");
 export const updateProfile = (data) => api.post("/profile", data);

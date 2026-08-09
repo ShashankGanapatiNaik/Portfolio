@@ -164,18 +164,27 @@ export default function Admin() {
 
   const loadData = async () => {
     try {
-      const [projRes, skillRes, msgRes] = await Promise.all([
+      const [projRes, skillRes, msgRes] = await Promise.allSettled([
         getProjects(), getSkills(), getMessages(),
       ]);
-      setProjects(projRes.data);
-      setSkills(skillRes.data);
-      setMessages(msgRes.data);
-    } catch {
-      toast.error("Failed to load data.");
+      if (projRes.status === "fulfilled" && projRes.value?.data) setProjects(projRes.value.data);
+      if (skillRes.status === "fulfilled" && skillRes.value?.data) setSkills(skillRes.value.data);
+      if (msgRes.status === "fulfilled" && msgRes.value?.data) setMessages(msgRes.value.data);
+    } catch (err) {
+      console.error("Error in loadData:", err);
     }
   };
 
   useEffect(() => { if (token) loadData(); }, [token]);
+
+  useEffect(() => {
+    const handleLogout = () => {
+      setToken(null);
+      toast.error("Session expired or invalid. Please log in again.");
+    };
+    window.addEventListener("admin-logout", handleLogout);
+    return () => window.removeEventListener("admin-logout", handleLogout);
+  }, []);
 
   if (!token) return <LoginForm onLogin={setToken} />;
 
