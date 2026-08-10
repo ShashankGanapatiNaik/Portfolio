@@ -16,6 +16,13 @@ const CELL = 12;
 const GAP = 3;
 const STEP = CELL + GAP;
 
+function getUTCDateStr(date) {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function ContributionGrid({ weeks }) {
   if (!weeks || weeks.length === 0) return null;
 
@@ -28,22 +35,25 @@ function ContributionGrid({ weeks }) {
   weeks.forEach((week, wIdx) => {
     const firstDay = week.contributionDays[0];
     if (!firstDay) return;
-    const m = new Date(firstDay.date + "T00:00:00").getMonth();
-    const isNewMonth = m !== lastMonth;
+    const [, m] = firstDay.date.split("-").map(Number);
+    const monthIndex = m - 1;
+    const isNewMonth = monthIndex !== lastMonth;
     if (isNewMonth && lastMonth !== -1) {
-      xOffset += MONTH_GAP; // add gap before new month starts
+      xOffset += MONTH_GAP;
     }
-    weekMeta.push({ wIdx, x: xOffset, month: m, isNewMonth });
+    weekMeta.push({ wIdx, x: xOffset, month: monthIndex, isNewMonth });
     xOffset += STEP;
-    lastMonth = m;
+    lastMonth = monthIndex;
   });
+
+  const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   // Build month labels from weekMeta
   const monthLabels = weekMeta
     .filter((w) => w.isNewMonth || w.wIdx === 0)
     .map((w) => ({
       x: w.x,
-      label: new Date(weeks[w.wIdx].contributionDays[0].date + "T00:00:00").toLocaleString("default", { month: "short" }),
+      label: MONTH_NAMES[w.month],
     }));
 
   const gridWidth = xOffset - GAP;
@@ -117,7 +127,6 @@ function ContributionGrid({ weeks }) {
       <div style={{ position: "relative", width: gridWidth, height: gridHeight }}>
         {weekMeta.map(({ wIdx, x }) => {
           const week = weeks[wIdx];
-          const padCount = wIdx === 0 ? 7 - week.contributionDays.length : 0;
           return (
             <motion.div
               key={wIdx}
@@ -133,7 +142,6 @@ function ContributionGrid({ weeks }) {
               }}
             >
               {week.contributionDays.map((day, dIdx) => {
-                const row = padCount + dIdx;
                 return (
                   <div
                     key={day.date}
@@ -142,9 +150,10 @@ function ContributionGrid({ weeks }) {
                     style={{
                       position: "absolute",
                       left: x,
-                      top: row * STEP,
+                      top: dIdx * STEP,
                       width: CELL,
                       height: CELL,
+                      borderRadius: 2,
                       background: LEVEL_COLORS[day.level],
                     }}
                   />
@@ -190,49 +199,58 @@ function generateRealisticCalendar(streak = 14, totalActiveDays = 85) {
 }
 
 function buildLeetcodeWeeks(submissionCalendar, streak = 14, totalActiveDays = 85) {
-  const today = new Date();
   const countMap = {};
 
   const hasRealData = submissionCalendar && Object.keys(submissionCalendar).length > 0;
 
   if (hasRealData) {
     Object.entries(submissionCalendar).forEach(([timestamp, count]) => {
-      const d = new Date(parseInt(timestamp, 10) * 1000);
-      const key = d.toISOString().split("T")[0];
-      countMap[key] = (countMap[key] || 0) + Number(count);
+      const ts = parseInt(timestamp, 10);
+      if (!isNaN(ts)) {
+        const d = new Date(ts * 1000);
+        const key = getUTCDateStr(d);
+        countMap[key] = (countMap[key] || 0) + Number(count);
+      }
     });
   } else {
     Object.assign(countMap, generateRealisticCalendar(streak, totalActiveDays));
   }
 
-  const startDate = new Date();
-  startDate.setDate(today.getDate() - 364);
-  const startDayOfWeek = startDate.getDay();
-  startDate.setDate(startDate.getDate() - startDayOfWeek);
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0, 0));
+  const dayOfWeek = todayUTC.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+  const startDate = new Date(todayUTC);
+  startDate.setUTCDate(todayUTC.getUTCDate() - (51 * 7 + dayOfWeek));
 
   const weeks = [];
   let cur = new Date(startDate);
+  const totalWeeks = dayOfWeek === 6 ? 52 : 53;
 
-  while (weeks.length < 52) {
+  for (let w = 0; w < totalWeeks; w++) {
     const weekDays = [];
-    for (let i = 0; i < 7; i++) {
-      const dateStr = cur.toISOString().split("T")[0];
-      const count = countMap[dateStr] || 0;
-      let level = 0;
-      if (count === 0) level = 0;
-      else if (count <= 2) level = 1;
-      else if (count <= 4) level = 2;
-      else if (count <= 7) level = 3;
-      else level = 4;
+    for (let d = 0; d < 7; d++) {
+      if (cur <= todayUTC) {
+        const dateStr = getUTCDateStr(cur);
+        const count = countMap[dateStr] || 0;
+        let level = 0;
+        if (count === 0) level = 0;
+        else if (count <= 2) level = 1;
+        else if (count <= 5) level = 2;
+        else if (count <= 9) level = 3;
+        else level = 4;
 
-      weekDays.push({
-        date: dateStr,
-        contributionCount: count,
-        level,
-      });
-      cur.setDate(cur.getDate() + 1);
+        weekDays.push({
+          date: dateStr,
+          contributionCount: count,
+          level,
+        });
+      }
+      cur.setUTCDate(cur.getUTCDate() + 1);
     }
-    weeks.push({ contributionDays: weekDays });
+    if (weekDays.length > 0) {
+      weeks.push({ contributionDays: weekDays });
+    }
   }
 
   const totalSubmissions = Object.values(countMap).reduce((a, b) => a + b, 0);

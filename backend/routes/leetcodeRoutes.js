@@ -6,8 +6,11 @@ const LEETCODE_USERNAME = process.env.LEETCODE_USERNAME || 'shashanknaik6226';
 
 router.get('/', async (req, res) => {
   try {
+    const currentYear = new Date().getFullYear();
+    const prevYear = currentYear - 1;
+
     const query = `
-      query getUserProfile($username: String!) {
+      query getUserProfile($username: String!, $year: Int, $prevYear: Int) {
         matchedUser(username: $username) {
           username
           submitStats: submitStatsGlobal {
@@ -22,9 +25,12 @@ router.get('/', async (req, res) => {
             reputation
             starRating
           }
-          streak: userCalendar {
+          streak: userCalendar(year: $year) {
             streak
             totalActiveDays
+            submissionCalendar
+          }
+          prevStreak: userCalendar(year: $prevYear) {
             submissionCalendar
           }
         }
@@ -37,7 +43,7 @@ router.get('/', async (req, res) => {
 
     const response = await axios.post(
       'https://leetcode.com/graphql',
-      { query, variables: { username: LEETCODE_USERNAME } },
+      { query, variables: { username: LEETCODE_USERNAME, year: currentYear, prevYear: prevYear } },
       {
         timeout: 8000,
         headers: {
@@ -71,16 +77,28 @@ router.get('/', async (req, res) => {
       ? ((totalSolved / totalSubmissions) * 100).toFixed(1)
       : 0;
 
-    let submissionCalendar = {};
+    let currentCal = {};
+    let prevCal = {};
     if (user.streak?.submissionCalendar) {
       try {
-        submissionCalendar = typeof user.streak.submissionCalendar === 'string'
+        currentCal = typeof user.streak.submissionCalendar === 'string'
           ? JSON.parse(user.streak.submissionCalendar)
           : user.streak.submissionCalendar;
       } catch (e) {
         console.error('Failed to parse submissionCalendar', e);
       }
     }
+    if (user.prevStreak?.submissionCalendar) {
+      try {
+        prevCal = typeof user.prevStreak.submissionCalendar === 'string'
+          ? JSON.parse(user.prevStreak.submissionCalendar)
+          : user.prevStreak.submissionCalendar;
+      } catch (e) {
+        console.error('Failed to parse prev submissionCalendar', e);
+      }
+    }
+
+    const submissionCalendar = { ...prevCal, ...currentCal };
 
     res.json({
       username: LEETCODE_USERNAME,
