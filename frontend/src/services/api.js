@@ -64,9 +64,6 @@ export const getGithubContributions = () => api.get("/github/contributions");
 // LeetCode
 export const getLeetcodeData = () => api.get("/leetcode");
 
-// GeeksforGeeks
-export const getGfgData = () => api.get("/gfg");
-
 // Codolio (aggregates LeetCode + Codeforces)
 export const getCodolioData = () => api.get("/codolio");
 

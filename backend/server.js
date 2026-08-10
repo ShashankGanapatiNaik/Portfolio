@@ -13,7 +13,6 @@ const resumeRoutes = require("./routes/resumeRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const githubRoutes = require("./routes/githubRoutes");
 const leetcodeRoutes = require("./routes/leetcodeRoutes");
-const gfgRoutes = require("./routes/gfgRoutes");
 const codolioRoutes  = require("./routes/codolioRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
 const skillRoutes = require("./routes/skillRoutes");
@@ -47,10 +46,10 @@ const chatLimiter = rateLimit({
 });
 
 // Reject API requests when MongoDB is not connected
-// Exempt routes that don't use the database (GitHub, LeetCode, GFG fetch from external APIs)
+// Exempt routes that don't use the database (GitHub, LeetCode fetch from external APIs)
 app.use("/api", (req, res, next) => {
   if (req.path === "/health") return next();
-  if (req.path.startsWith("/github") || req.path.startsWith("/leetcode") || req.path.startsWith("/gfg") || req.path.startsWith("/codolio")) return next();
+  if (req.path.startsWith("/github") || req.path.startsWith("/leetcode") || req.path.startsWith("/codolio")) return next();
   if (!getDbStatus()) {
     return res.status(503).json({
       error: "Service unavailable. MongoDB is not connected.",
@@ -99,7 +98,6 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/github", githubRoutes);
 app.use("/api/leetcode", leetcodeRoutes);
-app.use("/api/gfg", gfgRoutes);
 app.use("/api/codolio",  codolioRoutes);
 app.use("/api/chat", chatLimiter, chatbotRoutes);
 app.use("/api/skills", skillRoutes);
