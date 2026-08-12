@@ -10,13 +10,15 @@ export default function Footer() {
   ];
 
   return (
-    <footer style={{ marginTop: "4rem", padding: "0 2rem" }}>
+    <footer style={{ marginTop: "4rem" }}>
       <div
         style={{
           maxWidth: "68rem",
           margin: "0 auto",
           padding: "3rem 2rem 2rem",
           borderTop: "1px solid var(--border)",
+          borderLeft: "1px solid var(--border)",
+          borderRight: "1px solid var(--border)",
           background: "var(--bg-secondary)",
           borderRadius: "16px 16px 0 0",
         }}

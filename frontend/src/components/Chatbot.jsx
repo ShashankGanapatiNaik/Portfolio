@@ -89,7 +89,7 @@ export default function Chatbot() {
             style={{
               position: "fixed",
               bottom: "78px",
-              right: "16px",
+              right: "max(16px, calc((100vw - 68rem) / 2 + 16px))",
               width: "calc(100vw - 32px)",
               maxWidth: "380px",
               height: "clamp(420px, 70vh, 540px)",
@@ -465,7 +465,7 @@ export default function Chatbot() {
         style={{
           position: "fixed",
           bottom: "18px",
-          right: "16px",
+          right: "max(16px, calc((100vw - 68rem) / 2 + 16px))",
           zIndex: 9999,
           display: "flex",
           alignItems: "center",
