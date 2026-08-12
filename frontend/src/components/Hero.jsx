@@ -145,7 +145,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center grid-bg overflow-hidden"
+      className="relative min-h-[calc(100vh-64px)] md:min-h-screen flex items-center grid-bg overflow-hidden"
     >
       <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
       <div
@@ -158,7 +158,7 @@ export default function Hero() {
         }}
       />
 
-      <div className="section-container" style={{ paddingTop: "8rem", paddingBottom: "4rem" }}>
+      <div className="section-container" style={{ paddingTop: "4.5rem", paddingBottom: "2rem" }}>
         {/* Two column layout: text LEFT, photo RIGHT — always side by side */}
         <div
           style={{
@@ -186,8 +186,8 @@ export default function Hero() {
                 background: "var(--accent-tint)",
                 border: "1px solid var(--border-accent)",
                 borderRadius: "99px",
-                padding: "5px 14px 5px 8px",
-                marginBottom: "1.5rem",
+                padding: "4px 12px 4px 8px",
+                marginBottom: "0.85rem",
               }}
             >
               <span style={{
@@ -213,9 +213,9 @@ export default function Hero() {
               variants={itemVariants}
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "0.9rem",
+                fontSize: "0.85rem",
                 color: "var(--text-secondary)",
-                marginBottom: "0.5rem",
+                marginBottom: "0.25rem",
                 letterSpacing: "0.02em",
               }}
             >
@@ -227,11 +227,11 @@ export default function Hero() {
               variants={itemVariants}
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "clamp(2.4rem, 6vw, 4.5rem)",
+                fontSize: "clamp(2.2rem, 5.5vw, 4.2rem)",
                 fontWeight: 800,
                 lineHeight: 1.08,
                 letterSpacing: "-0.03em",
-                marginBottom: "0.5rem",
+                marginBottom: "0.35rem",
                 color: "var(--text-primary)",
               }}
             >
@@ -252,12 +252,12 @@ export default function Hero() {
               variants={itemVariants}
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)",
+                fontSize: "clamp(1.05rem, 2.2vw, 1.5rem)",
                 fontWeight: 500,
                 color: "var(--text-secondary)",
-                lineHeight: 1.4,
+                lineHeight: 1.35,
                 letterSpacing: "-0.01em",
-                marginBottom: "1.5rem",
+                marginBottom: "0.85rem",
               }}
             >
               I build{" "}
@@ -266,7 +266,7 @@ export default function Hero() {
 
             <motion.p
               variants={itemVariants}
-              className="font-body text-slate text-sm sm:text-base leading-relaxed mb-8"
+              className="font-body text-slate text-sm sm:text-base leading-relaxed mb-5"
               style={{ maxWidth: "500px" }}
             >
               CS student at{" "}
@@ -515,23 +515,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-      >
-        <span className="font-mono text-xs text-slate">scroll</span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-0.5 h-8"
-          style={{
-            background: "linear-gradient(to bottom, var(--accent), transparent)",
-          }}
-        />
-      </motion.div>
+
 
       {/* ── Modal ── */}
       <AnimatePresence>

@@ -9,7 +9,9 @@ const CATEGORIES = [
   { label: "📄 Resume", prompt: "How can I download his resume or contact him?" },
 ];
 
-const AVATAR_URL = "https://github.com/ShashankGanapatiNaik.png";
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const AVATAR_URL = `${API_BASE}/profile/photo`;
+const FALLBACK_AVATAR = "https://github.com/ShashankGanapatiNaik.png";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -134,7 +136,7 @@ export default function Chatbot() {
                         border: "2px solid var(--border-accent)",
                       }}
                       onError={(e) => {
-                        e.target.style.display = "none";
+                        e.target.src = FALLBACK_AVATAR;
                       }}
                     />
                     <span
@@ -247,6 +249,9 @@ export default function Chatbot() {
                               marginTop: "2px",
                               border: "1px solid var(--border-accent)",
                             }}
+                            onError={(e) => {
+                              e.target.src = FALLBACK_AVATAR;
+                            }}
                           />
                         )}
 
@@ -308,6 +313,9 @@ export default function Chatbot() {
                         borderRadius: "50%",
                         objectFit: "cover",
                         border: "1px solid var(--border-accent)",
+                      }}
+                      onError={(e) => {
+                        e.target.src = FALLBACK_AVATAR;
                       }}
                     />
                     <div
@@ -510,6 +518,9 @@ export default function Chatbot() {
                   borderRadius: "50%",
                   objectFit: "cover",
                   border: "1px solid var(--border-accent)",
+                }}
+                onError={(e) => {
+                  e.target.src = FALLBACK_AVATAR;
                 }}
               />
               <span
