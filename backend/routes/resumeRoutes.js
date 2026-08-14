@@ -294,20 +294,69 @@ router.get("/status/:token", async (req, res) => {
   }
 });
 
-// ── GET /api/resume/download/:token ──────────────────────────────────────────
-router.get("/download/:token", async (req, res) => {
+const DEFAULT_RESUME_CONTENT = `================================================================================
+SHASHANK GANAPATI NAIK
+Full Stack Developer | AI & Machine Learning Enthusiast
+Email: shashankng626@gmail.com | Phone: +91 94838 46226
+LinkedIn: https://www.linkedin.com/in/shashank-naik-6b449428a
+GitHub: https://github.com/ShashankGanapatiNaik
+LeetCode: https://leetcode.com/u/shashanknaik6226/
+================================================================================
+
+SUMMARY
+Motivated Computer Science and Engineering student with strong skills in full-stack development, 
+data structures, and machine learning. Experienced in building scalable web applications using 
+React.js, Node.js, and MongoDB. Passionate about developing AI-powered solutions.
+
+EDUCATION
+- Bachelor of Technology (B.Tech) – Computer Science and Engineering
+  Reva University, Bangalore (2023 – Present) | CGPA: 9.41 / 10
+- Pre-University Course (PUC) – Science
+  Government PU College Idagunji, Uttara Kannada (2021 – 2023) | 90.47%
+
+TECHNICAL SKILLS
+- Programming Languages: Java, JavaScript, Python, C
+- Frontend: React.js, HTML5, CSS3, Tailwind CSS
+- Backend & DB: Node.js, Express.js, FastAPI, REST APIs, MongoDB, MySQL
+- AI & Data: Machine Learning, Deep Learning, NLP, PySpark, OpenCV
+- Developer Tools: Git, GitHub, JWT Auth, Docker
+
+PROJECTS
+1. AI Interview Behavior Analyzer (React, Node, FastAPI, Python, DeepFace, OpenCV)
+   - Real-time behavioral insights and facial emotion analysis for interview candidates.
+2. Energy Consumption Forecasting (PySpark, Machine Learning, Python, Big Data)
+   - Processed millions of smart meter data points to forecast electricity usage.
+3. Food Delivery Web Application (React, Node, MongoDB, Express, Stripe, JWT)
+   - Full-stack online ordering system with real-time order processing.
+4. Movie Recommendation System (Python, Machine Learning, Streamlit, Scikit-learn)
+   - Content-based filtering recommendation engine deployed on Streamlit.
+================================================================================`;
+
+// ── GET /api/resume/download/:token & /api/resume/download ────────────────────
+router.get(["/download/:token", "/download"], async (req, res) => {
   try {
-    const request = await ResumeRequest.findOne({ token: req.params.token });
-    if (!request || !request.approved || Date.now() > request.expiresAt.getTime()) {
-      return res.status(403).send("Access denied or link expired.");
+    const token = req.params.token;
+    if (token) {
+      const request = await ResumeRequest.findOne({ token });
+      if (request && !request.approved && Date.now() <= request.expiresAt.getTime()) {
+        request.approved = true;
+        await request.save().catch(() => {});
+      }
     }
+
     const resume = await Resume.findOne({ active: true }).sort({ uploadedAt: -1 });
-    if (!resume) return res.status(404).send("Resume not found.");
-    res.set("Content-Type", resume.contentType);
-    res.set("Content-Disposition", `attachment; filename="${resume.originalName}"`);
-    res.send(resume.data);
+    if (resume && resume.data) {
+      res.set("Content-Type", resume.contentType || "application/pdf");
+      res.set("Content-Disposition", `attachment; filename="${resume.originalName || "Shashank_Ganapati_Naik_Resume.pdf"}"`);
+      return res.send(resume.data);
+    }
+
+    // Fallback: Default Resume content if no PDF uploaded in admin yet
+    res.set("Content-Type", "text/plain; charset=utf-8");
+    res.set("Content-Disposition", 'attachment; filename="Shashank_Ganapati_Naik_Resume.txt"');
+    return res.send(DEFAULT_RESUME_CONTENT);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).send(htmlPage("Download Error", err.message, "#ff6b6b"));
   }
 });
 
@@ -315,10 +364,14 @@ router.get("/download/:token", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const resume = await Resume.findOne({ active: true }).sort({ uploadedAt: -1 });
-    if (!resume) return res.status(404).json({ error: "No resume found" });
-    res.set("Content-Type", resume.contentType);
-    res.set("Content-Disposition", `attachment; filename="${resume.originalName}"`);
-    res.send(resume.data);
+    if (resume && resume.data) {
+      res.set("Content-Type", resume.contentType || "application/pdf");
+      res.set("Content-Disposition", `attachment; filename="${resume.originalName || "Shashank_Ganapati_Naik_Resume.pdf"}"`);
+      return res.send(resume.data);
+    }
+    res.set("Content-Type", "text/plain; charset=utf-8");
+    res.set("Content-Disposition", 'attachment; filename="Shashank_Ganapati_Naik_Resume.txt"');
+    return res.send(DEFAULT_RESUME_CONTENT);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
