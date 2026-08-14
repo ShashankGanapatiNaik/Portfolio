@@ -32,7 +32,26 @@ export default function Hero() {
   const [photoError, setPhotoError] = useState(false);
   const [photoKey, setPhotoKey] = useState(0);
   const retryCount = useRef(0);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isPopped, setIsPopped] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+
+  const triggerPop = () => {
+    setIsPopped(true);
+    setTimeout(() => setIsPopped(false), 500);
+  };
+
+  // Close photo modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowPhotoModal(false);
+      }
+    };
+    if (showPhotoModal) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showPhotoModal]);
 
   // Typewriter effect
   useEffect(() => {
@@ -393,129 +412,288 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* ── RIGHT: Profile Photo with 3D Flip Animation ── */}
+          {/* ── RIGHT: Profile Photo with Dynamic Pop Animation ── */}
           <motion.div
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
             style={{
               flexShrink: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              perspective: "1000px",
+              position: "relative",
             }}
           >
+            {/* Pop Ring Pulse Effect */}
+            <AnimatePresence>
+              {isPopped && (
+                <motion.div
+                  initial={{ scale: 1, opacity: 0.8 }}
+                  animate={{ scale: 1.4, opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: "50%",
+                    border: "2px solid var(--accent)",
+                    boxShadow: "0 0 25px var(--accent)",
+                    pointerEvents: "none",
+                  }}
+                />
+              )}
+            </AnimatePresence>
+
             <motion.div
+              onClick={() => {
+                triggerPop();
+                setShowPhotoModal(true);
+              }}
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.92 }}
+              animate={
+                isPopped
+                  ? {
+                      scale: [1, 1.25, 0.92, 1.08, 1],
+                      rotate: [0, -3, 3, -1, 0],
+                    }
+                  : { scale: 1, rotate: 0 }
+              }
+              transition={{
+                duration: 0.45,
+                ease: [0.175, 0.885, 0.32, 1.275],
+              }}
               style={{
                 position: "relative",
                 width: "clamp(160px, 25vw, 300px)",
                 height: "clamp(160px, 25vw, 300px)",
-                transformStyle: "preserve-3d",
                 cursor: "pointer",
+                borderRadius: "50%",
+                border: "2px solid var(--border-accent)",
+                padding: "6px",
+                background: "var(--bg-secondary)",
+                boxShadow: isPopped
+                  ? "0 0 35px var(--accent-tint), 0 12px 35px rgba(0,0,0,0.3)"
+                  : "0 10px 30px rgba(0,0,0,0.2)",
+                transition: "box-shadow 0.3s ease, border-color 0.3s ease",
               }}
-              animate={{ rotateY: isFlipped ? 180 : undefined }}
-              whileHover={{ rotateY: 180 }}
-              onTap={() => setIsFlipped((prev) => !prev)}
-              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              {/* FRONT: The Avatar Image */}
               <div
                 style={{
-                  position: "absolute",
-                  inset: 0,
                   width: "100%",
                   height: "100%",
-                  backfaceVisibility: "hidden",
                   borderRadius: "50%",
-                  border: "1px solid var(--border)",
-                  padding: "6px",
-                  background: "var(--bg-secondary)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  overflow: "hidden",
+                  background: "var(--bg-tertiary)",
                 }}
               >
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    background: "var(--bg-tertiary)",
-                  }}
-                >
-                  {!photoError ? (
-                    <img
-                      key={photoKey}
-                      src={`${API_BASE}/profile/photo?t=${photoKey}`}
-                      alt="Shashank Ganapati Naik"
+                {!photoError ? (
+                  <img
+                    key={photoKey}
+                    src={`${API_BASE}/profile/photo?t=${photoKey}`}
+                    alt="Shashank Ganapati Naik"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center top",
+                    }}
+                    onError={() => {
+                      if (retryCount.current < 3) {
+                        retryCount.current += 1;
+                        setTimeout(() => setPhotoKey((k) => k + 1), 1500);
+                      } else {
+                        setPhotoError(true);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "var(--bg-tertiary)",
+                    }}
+                  >
+                    <span
                       style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        objectPosition: "center top",
+                        fontFamily: "Outfit,sans-serif",
+                        fontSize: "3.5rem",
+                        fontWeight: "700",
+                        color: "var(--text-primary)",
                       }}
-                      onError={() => {
-                        if (retryCount.current < 3) {
-                          retryCount.current += 1;
-                          setTimeout(() => setPhotoKey((k) => k + 1), 1500);
-                        } else {
-                          setPhotoError(true);
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-tertiary)" }}>
-                      <span style={{ fontFamily: "Outfit,sans-serif", fontSize: "3.5rem", fontWeight: "700", color: "var(--text-primary)" }}>SN</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* BACK: High-end holographic badge */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  backfaceVisibility: "hidden",
-                  transform: "rotateY(180deg)",
-                  borderRadius: "50%",
-                  border: "2px solid var(--border-accent)",
-                  padding: "16px",
-                  background: "radial-gradient(circle, rgba(16,185,129,0.1) 0%, var(--bg-secondary) 100%)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  boxShadow: "0 0 20px rgba(52, 211, 153, 0.15)",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
-                    fontWeight: "800",
-                    color: "var(--accent)",
-                    letterSpacing: "1px",
-                    fontFamily: "var(--font-sans)",
-                    lineHeight: 1.1,
-                  }}
-                >
-                  SN
-                </span>
-                <div style={{ width: "30px", height: "2px", background: "var(--accent)", margin: "8px 0" }} />
-                <p style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--text-secondary)", textTransform: "uppercase" }}>REVA University</p>
-                <p style={{ fontSize: "11px", color: "var(--text-primary)", fontWeight: "500", marginTop: "4px" }}>Full Stack & AI Engineer</p>
+                    >
+                      SN
+                    </span>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
         </div>
       </div>
 
+      {/* ── Profile Photo Popup Modal ── */}
+      <AnimatePresence>
+        {showPhotoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={() => setShowPhotoModal(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0, 0, 0, 0.82)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              padding: "1.5rem",
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.65, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.65, y: 30 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "relative",
+                maxWidth: "420px",
+                width: "100%",
+                background: "var(--bg-secondary)",
+                border: "1px solid var(--border-accent)",
+                borderRadius: "24px",
+                padding: "2rem 1.5rem 1.75rem",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(16,185,129,0.15)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowPhotoModal(false)}
+                title="Close (Esc)"
+                style={{
+                  position: "absolute",
+                  top: "14px",
+                  right: "14px",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "var(--bg-tertiary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-secondary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 10,
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--text-primary)";
+                  e.currentTarget.style.borderColor = "var(--border-accent)";
+                  e.currentTarget.style.transform = "scale(1.08)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--text-secondary)";
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
 
+              {/* Photo Frame */}
+              <div
+                style={{
+                  width: "clamp(220px, 65vw, 320px)",
+                  height: "clamp(220px, 65vw, 320px)",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "3px solid var(--accent)",
+                  boxShadow: "0 0 35px var(--accent-tint), 0 10px 30px rgba(0,0,0,0.4)",
+                  background: "var(--bg-tertiary)",
+                  marginBottom: "1.25rem",
+                }}
+              >
+                {!photoError ? (
+                  <img
+                    src={`${API_BASE}/profile/photo?t=${photoKey}`}
+                    alt="Shashank Ganapati Naik"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center top",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "var(--bg-tertiary)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "Outfit,sans-serif",
+                        fontSize: "4.5rem",
+                        fontWeight: "700",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      SN
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Caption */}
+              <h3
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "1.3rem",
+                  fontWeight: "700",
+                  color: "var(--text-primary)",
+                  letterSpacing: "-0.02em",
+                  marginBottom: "0.2rem",
+                }}
+              >
+                Shashank Ganapati Naik
+              </h3>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.825rem",
+                  color: "var(--accent)",
+                  fontWeight: "500",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Full Stack & AI Engineer
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Modal ── */}
       <AnimatePresence>
