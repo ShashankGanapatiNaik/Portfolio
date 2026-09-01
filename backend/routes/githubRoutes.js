@@ -34,8 +34,8 @@ router.get('/', async (req, res) => {
 
   const fetchWithHeaders = async (headers) => {
     const [userRes, reposRes] = await Promise.all([
-      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers }),
-      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`, { headers })
+      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers, timeout: 4000 }),
+      axios.get(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`, { headers, timeout: 4000 })
     ]);
     return { user: userRes.data, repos: reposRes.data };
   };
@@ -139,7 +139,7 @@ router.get('/contributions', async (req, res) => {
   try {
     const response = await axios.get(
       `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`,
-      { timeout: 15000 }
+      { timeout: 4000 }
     );
 
     const raw = response.data?.contributions; // [{ date, count, level }]

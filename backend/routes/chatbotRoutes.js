@@ -9,7 +9,7 @@ const isOpenAI =
   process.env.OPENAI_API_KEY !== "your_openai_api_key";
 
 console.log(
-  `🤖 Chatbot: ${isGroq ? "Groq LLaMA3 (FREE)" : isOpenAI ? "OpenAI GPT-3.5" : "Rule-based fallback"}`,
+  `🤖 Chatbot: ${isGroq ? "Groq LLaMA (FREE)" : isOpenAI ? "OpenAI GPT-3.5" : "Rule-based fallback"}`,
 );
 
 // Build portfolio context from DB
@@ -68,25 +68,63 @@ INSTRUCTIONS:
 - CRITICAL: If a user asks you to write code, solve programming questions, explain concepts not related to Shashank, or discuss any other unrelated topics, politely refuse and state that you can only answer questions about Shashank's background, projects, skills, and portfolio.`;
 };
 
-// Call Groq API directly via axios
+// Groq model candidates (in order of preference)
+const GROQ_MODELS = [
+  "llama-3.1-8b-instant",
+  "llama3-8b-8192",
+  "mixtral-8x7b-32768",
+  "gemma-7b-it",
+];
+
+// Call Groq API directly via axios — tries multiple models
 const callGroq = async (messages) => {
-  const response = await axios.post(
-    "https://api.groq.com/openai/v1/chat/completions",
-    {
-      model: "llama-3.1-8b-instant",
-      messages,
-      max_tokens: 400,
-      temperature: 0.7,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      timeout: 15000,
-    },
-  );
-  return response.data.choices[0]?.message?.content;
+  let lastError = null;
+
+  for (const model of GROQ_MODELS) {
+    try {
+      console.log(`🔄 Trying Groq model: ${model}`);
+      const response = await axios.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          model,
+          messages,
+          max_tokens: 400,
+          temperature: 0.7,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 15000,
+        },
+      );
+      const content = response.data.choices[0]?.message?.content;
+      console.log(`✅ Groq success with model: ${model}`);
+      return content;
+    } catch (err) {
+      const errMsg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.error ||
+        err.message;
+      const status = err.response?.status;
+      console.error(`❌ Groq model ${model} failed [${status}]:`, errMsg);
+      lastError = { status, message: errMsg, model };
+
+      // If it's an auth error, don't try other models
+      if (status === 401 || status === 403) {
+        console.error("🔑 Groq API key invalid or unauthorised — check GROQ_API_KEY in .env");
+        throw new Error(`Groq auth error: ${errMsg}`);
+      }
+      // If rate limited, don't try other models
+      if (status === 429) {
+        console.warn("⏳ Groq rate limit hit");
+        throw new Error(`Groq rate limit: ${errMsg}`);
+      }
+    }
+  }
+
+  throw new Error(`All Groq models failed. Last: ${JSON.stringify(lastError)}`);
 };
 
 // Call OpenAI API directly via axios
@@ -105,42 +143,63 @@ const callOpenAI = async (messages) => {
   return response.data.choices[0]?.message?.content;
 };
 
-// Rule-based fallback
+// Comprehensive rule-based fallback
 const getRuleBasedReply = (msg) => {
   const m = msg.toLowerCase();
-  if (m.includes("skill") || m.includes("technolog") || m.includes("know"))
-    return "Shashank is skilled in React.js, Node.js, Python, Java, MongoDB, Express.js, FastAPI, Machine Learning, Deep Learning, and NLP. Check the Skills section for the full breakdown!";
-  if (m.includes("project") || m.includes("built") || m.includes("work"))
-    return "Shashank has built:\n1. 🤖 AI Interview Behavior Analyzer (React, FastAPI, DeepFace, OpenCV)\n2. ⚡ Energy Consumption Forecasting (PySpark, ML)\n3. 🍕 Food Delivery App (React, Node.js, MongoDB)\n4. 🎬 Movie Recommendation System (Python, Streamlit)\n\nCheck the Projects section for details!";
+
+  // Greetings
+  if (
+    m === "hi" || m === "hello" || m === "hey" || m === "hii" ||
+    m.match(/^(hi|hello|hey|hii|howdy|sup|what's up|whats up)[!?.]*$/)
+  )
+    return "Hi there! 👋 I'm Shashank's portfolio assistant.\n\nI can answer questions about his:\n• 💼 Projects & tech stack\n• ⚡ Skills & technologies\n• 🎓 Education & background\n• 📄 Resume & contact info\n\nWhat would you like to know?";
+
+  // Skills
+  if (m.includes("skill") || m.includes("technolog") || m.includes("know") || m.includes("language") || m.includes("framework") || m.includes("stack"))
+    return "🛠️ Shashank's Tech Stack:\n\n• **Languages**: JavaScript, Python, Java, C\n• **Frontend**: React.js, HTML5, CSS3, Tailwind CSS\n• **Backend**: Node.js, Express.js, FastAPI, REST APIs\n• **Databases**: MongoDB, MySQL\n• **AI/ML**: Machine Learning, Deep Learning, NLP, PySpark\n• **Tools**: Git, GitHub, JWT Auth, OpenCV\n• **Core CS**: DSA, OOP, OS, DBMS, Computer Networks\n\nCheck the Skills section on the portfolio for detailed proficiency levels!";
+
+  // Projects
+  if (m.includes("project") || m.includes("built") || m.includes("creat") || m.includes("develop"))
+    return "🚀 Shashank's Projects:\n\n1. 🤖 **AI Interview Behavior Analyzer** — Real-time emotion & behavior analysis from video using DeepFace + OpenCV. Stack: React, FastAPI, Python, MongoDB.\n\n2. ⚡ **Energy Consumption Forecasting** — Big data ML pipeline with PySpark analyzing millions of smart meter readings.\n\n3. 🍕 **Food Delivery Web App** — Full-stack platform with auth, cart, and Stripe payments. Stack: React, Node.js, MongoDB.\n\n4. 🎬 **Movie Recommendation System** — Content-based ML recommender using cosine similarity, deployed on Streamlit.\n\nSee the Projects section for live demos & GitHub links!";
+
+  // Resume / Download
   if (m.includes("resume") || m.includes("cv") || m.includes("download"))
-    return "Click the 'Download Resume' button in the Hero section at the top of the page to get Shashank's latest resume!";
-  if (m.includes("github"))
-    return "Shashank's GitHub profile: https://github.com/ShashankGanapatiNaik\n\nHe has projects in React, Node.js, Python, and Machine Learning!";
-  if (m.includes("leetcode") || m.includes("coding") || m.includes("dsa"))
-    return "Shashank actively solves problems on LeetCode: https://leetcode.com/u/shashanknaik6226/\n\nCheck the LeetCode Stats section to see his progress!";
-  if (
-    m.includes("contact") ||
-    m.includes("email") ||
-    m.includes("hire") ||
-    m.includes("reach")
-  )
-    return "You can reach Shashank at:\n📧 shashankng626@gmail.com\n💼 LinkedIn: linkedin.com/in/shashank-naik-6b449428a\n\nOr use the Contact section at the bottom of the portfolio!";
-  if (
-    m.includes("education") ||
-    m.includes("study") ||
-    m.includes("university") ||
-    m.includes("college")
-  )
-    return "Shashank is pursuing B.Tech in Computer Science & Engineering at Reva University, Bangalore (2023–Present) with an impressive CGPA of 9.41/10!";
-  if (
-    m.includes("experience") ||
-    m.includes("background") ||
-    m.includes("about")
-  )
-    return "Shashank is a motivated CS student at Reva University with strong skills in full-stack development and machine learning. He has built AI-powered systems, big data pipelines, and full-stack web apps. CGPA: 9.41/10.";
-  if (m.includes("ai") || m.includes("machine learning") || m.includes("ml"))
-    return "Shashank is passionate about AI & ML! He has experience with Machine Learning, Deep Learning, NLP, PySpark, DeepFace, and OpenCV. His flagship project is an AI Interview Behavior Analyzer that detects emotions from video in real-time!";
-  return "Hi! I'm Shashank's portfolio assistant 👋\n\nI can tell you about his skills, projects, education, or how to contact him. What would you like to know?";
+    return "📄 To download Shashank's resume:\n\nClick the **\"Download Resume\"** button in the Hero section at the top of the portfolio page!\n\nFor a quick overview:\n• B.Tech CSE at Reva University — CGPA 9.41/10\n• Full Stack + AI/ML expertise\n• 4 hands-on projects\n\n📧 Alternatively reach out: shashankng626@gmail.com";
+
+  // GitHub
+  if (m.includes("github") || m.includes("git") || m.includes("repo") || m.includes("code"))
+    return "💻 Shashank's GitHub Profile:\n👉 https://github.com/ShashankGanapatiNaik\n\nHe has public repos for all his major projects:\n• AI Interview Behavior Analyzer\n• Energy Consumption Forecasting\n• Food Delivery App\n• Movie Recommendation System\n\nFeel free to explore and star the repos!";
+
+  // LeetCode / DSA / Competitive
+  if (m.includes("leetcode") || m.includes("competitive") || m.includes("dsa") || m.includes("algorithm") || m.includes("data structure"))
+    return "🏆 Shashank on LeetCode:\n👉 https://leetcode.com/u/shashanknaik6226/\n\nHe actively solves problems focusing on DSA (Data Structures & Algorithms).\nCheck the **LeetCode Stats** section on the portfolio to see his solve count and ratings!";
+
+  // Contact / Hire / Email
+  if (m.includes("contact") || m.includes("email") || m.includes("hire") || m.includes("reach") || m.includes("connect") || m.includes("recruit"))
+    return "📬 Contact Shashank:\n\n📧 Email: shashankng626@gmail.com\n💼 LinkedIn: https://www.linkedin.com/in/shashank-naik-6b449428a\n💻 GitHub: https://github.com/ShashankGanapatiNaik\n\nOr use the **Contact form** at the bottom of the portfolio — he typically responds within 24 hours!";
+
+  // Education / College / University
+  if (m.includes("education") || m.includes("study") || m.includes("university") || m.includes("college") || m.includes("degree") || m.includes("cgpa") || m.includes("gpa") || m.includes("reva"))
+    return "🎓 Shashank's Education:\n\n• **B.Tech in Computer Science & Engineering**\n  Reva University, Bangalore (2023 – Present)\n  CGPA: **9.41 / 10** 🌟\n  Focus: Full Stack Dev, AI/ML, DSA\n\n• **Pre-University (Science / PCM+CS)**\n  Government PU College Idagunji (2021–2023)\n  Score: **90.47%**";
+
+  // Experience / Background / About
+  if (m.includes("experience") || m.includes("background") || m.includes("about") || m.includes("who") || m.includes("introduce"))
+    return "👨‍💻 About Shashank Ganapati Naik:\n\nMotivated Computer Science student at Reva University, Bangalore with a strong passion for full-stack development and AI/ML.\n\n**Highlights:**\n• CGPA: 9.41/10\n• Built 4 major hands-on projects\n• Expertise in React, Node.js, Python, and Machine Learning\n• Interested in AI-powered systems & scalable web apps\n\n**Goal:** To become a skilled software engineer specializing in full-stack and AI-driven applications.";
+
+  // AI / ML
+  if (m.includes("ai") || m.includes("machine learning") || m.includes("ml") || m.includes("deep learning") || m.includes("neural") || m.includes("model"))
+    return "🤖 Shashank's AI/ML Expertise:\n\n• **Machine Learning** — supervised/unsupervised models\n• **Deep Learning** — neural networks, DeepFace\n• **NLP** — natural language processing\n• **Computer Vision** — OpenCV, real-time video analysis\n• **Big Data** — PySpark for distributed ML\n\nHis flagship AI project is the **AI Interview Behavior Analyzer** that detects 7 emotions from video in real-time!";
+
+  // LinkedIn
+  if (m.includes("linkedin"))
+    return "💼 Shashank's LinkedIn:\n👉 https://www.linkedin.com/in/shashank-naik-6b449428a\n\nFeel free to connect with him there!";
+
+  // Internship / job
+  if (m.includes("internship") || m.includes("job") || m.includes("work") || m.includes("open to"))
+    return "🌟 Shashank is open to internship and job opportunities!\n\nHe's looking for roles in:\n• Full Stack Development\n• AI/ML Engineering\n• Software Engineering\n\n📧 Reach out: shashankng626@gmail.com\n💼 LinkedIn: https://www.linkedin.com/in/shashank-naik-6b449428a";
+
+  // Default
+  return "Hi! I'm Shashank's portfolio assistant 👋\n\nI can tell you about his:\n• **Projects** — AI, full-stack & ML apps\n• **Skills** — React, Node.js, Python, AI/ML and more\n• **Education** — B.Tech CSE at Reva University (CGPA 9.41)\n• **Contact** — email, LinkedIn, GitHub\n• **Resume** — how to download it\n\nWhat would you like to know?";
 };
 
 router.post("/", async (req, res) => {
@@ -158,19 +217,16 @@ router.post("/", async (req, res) => {
   if (isGroq) {
     try {
       const reply = await callGroq(messages_ctx);
-      return res.json({ reply });
+      return res.json({ reply, source: "groq" });
     } catch (err) {
-      console.error(
-        "Groq error:",
-        err.response?.data?.error?.message || err.message,
-      );
+      console.error("Groq failed, trying next:", err.message);
     }
   }
 
   if (isOpenAI) {
     try {
       const reply = await callOpenAI(messages_ctx);
-      return res.json({ reply });
+      return res.json({ reply, source: "openai" });
     } catch (err) {
       console.error(
         "OpenAI error:",
@@ -180,7 +236,8 @@ router.post("/", async (req, res) => {
   }
 
   // Rule-based fallback
-  res.json({ reply: getRuleBasedReply(message) });
+  console.log("⚠️ Using rule-based fallback for:", message);
+  res.json({ reply: getRuleBasedReply(message), source: "rule-based" });
 });
 
 module.exports = router;

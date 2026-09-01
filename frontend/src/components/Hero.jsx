@@ -491,7 +491,7 @@ export default function Hero() {
                 {!photoError ? (
                   <img
                     key={photoKey}
-                    src={`${API_BASE}/profile/photo?t=${photoKey}`}
+                    src={photoKey === 0 ? `${API_BASE}/profile/photo` : `${API_BASE}/profile/photo?t=${photoKey}`}
                     alt="Shashank Ganapati Naik"
                     style={{
                       width: "100%",
@@ -632,7 +632,7 @@ export default function Hero() {
               >
                 {!photoError ? (
                   <img
-                    src={`${API_BASE}/profile/photo?t=${photoKey}`}
+                    src={photoKey === 0 ? `${API_BASE}/profile/photo` : `${API_BASE}/profile/photo?t=${photoKey}`}
                     alt="Shashank Ganapati Naik"
                     style={{
                       width: "100%",

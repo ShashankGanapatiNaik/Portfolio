@@ -4,7 +4,17 @@ const axios = require('axios');
 
 const LEETCODE_USERNAME = process.env.LEETCODE_USERNAME || 'shashanknaik6226';
 
+// In-memory cache (20 minutes TTL)
+let cacheData = null;
+let cacheTime = 0;
+const CACHE_TTL = 20 * 60 * 1000;
+
 router.get('/', async (req, res) => {
+  const now = Date.now();
+  if (cacheData && (now - cacheTime < CACHE_TTL)) {
+    return res.json(cacheData);
+  }
+
   try {
     const currentYear = new Date().getFullYear();
     const prevYear = currentYear - 1;
@@ -45,7 +55,7 @@ router.get('/', async (req, res) => {
       'https://leetcode.com/graphql',
       { query, variables: { username: LEETCODE_USERNAME, year: currentYear, prevYear: prevYear } },
       {
-        timeout: 8000,
+        timeout: 4000,
         headers: {
           'Content-Type': 'application/json',
           'Referer': 'https://leetcode.com',
@@ -56,12 +66,14 @@ router.get('/', async (req, res) => {
       }
     );
 
-
     const data = response.data?.data;
     const user = data?.matchedUser;
     const allQuestions = data?.allQuestionsCount;
 
-    if (!user) return res.status(404).json({ error: 'LeetCode user not found' });
+    if (!user) {
+      if (cacheData) return res.json(cacheData);
+      return res.status(404).json({ error: 'LeetCode user not found' });
+    }
 
     const stats = user.submitStats?.acSubmissionNum || [];
     const getCount = (diff) => stats.find(s => s.difficulty === diff)?.count || 0;
@@ -100,7 +112,7 @@ router.get('/', async (req, res) => {
 
     const submissionCalendar = { ...prevCal, ...currentCal };
 
-    res.json({
+    const result = {
       username: LEETCODE_USERNAME,
       totalSolved,
       easySolved,
@@ -115,9 +127,17 @@ router.get('/', async (req, res) => {
       totalActiveDays: user.streak?.totalActiveDays || 0,
       submissionCalendar,
       profileUrl: `https://leetcode.com/u/${LEETCODE_USERNAME}/`,
-    });
+    };
+
+    cacheData = result;
+    cacheTime = Date.now();
+
+    res.json(result);
   } catch (err) {
     console.error('LeetCode API error:', err.message);
+    if (cacheData) {
+      return res.json(cacheData);
+    }
     // Return structured data fallback if external LeetCode API is blocked or times out
     res.json({
       username: LEETCODE_USERNAME,
@@ -139,3 +159,4 @@ router.get('/', async (req, res) => {
 });
 
 module.exports = router;
+

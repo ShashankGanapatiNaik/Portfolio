@@ -26,17 +26,29 @@ function HeatmapGrid({ weeks }) {
     <p className="font-mono text-xs text-slate text-center py-8">No activity data yet.</p>
   );
 
+  const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthLabels = [];
   let lastMonth = -1;
+  let lastLabelX = -999;
   weeks.forEach((week, wIdx) => {
     const first = week.contributionDays[0];
     if (!first) return;
     const m = new Date(first.date + "T00:00:00").getMonth();
     if (m !== lastMonth) {
-      monthLabels.push({
-        wIdx,
-        label: new Date(first.date + "T00:00:00").toLocaleString("default", { month: "short" }),
-      });
+      const posX = wIdx * STEP;
+      if (posX - lastLabelX >= 32) {
+        monthLabels.push({
+          wIdx,
+          label: MONTH_NAMES[m],
+        });
+        lastLabelX = posX;
+      } else if (monthLabels.length === 1 && posX - lastLabelX < 32) {
+        monthLabels[0] = {
+          wIdx,
+          label: MONTH_NAMES[m],
+        };
+        lastLabelX = posX;
+      }
       lastMonth = m;
     }
   });

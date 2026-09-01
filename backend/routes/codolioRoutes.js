@@ -217,8 +217,18 @@ function buildHeatmap(lcCalendarStr) {
   return { weeks, totalSubmissions, activeDays };
 }
 
+// In-memory cache (20 minutes TTL)
+let cacheData = null;
+let cacheTime = 0;
+const CACHE_TTL = 20 * 60 * 1000;
+
 // ── Route ─────────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
+  const now = Date.now();
+  if (cacheData && (now - cacheTime < CACHE_TTL)) {
+    return res.json(cacheData);
+  }
+
   try {
     const [lcResult, gfgResult] = await Promise.allSettled([fetchLeetCode(), fetchGeeksforGeeks()]);
     const lc  = lcResult.status === 'fulfilled' ? lcResult.value : null;
@@ -226,7 +236,7 @@ router.get('/', async (req, res) => {
 
     const { weeks, totalSubmissions, activeDays } = buildHeatmap(lc?.submissionCalendar);
 
-    res.json({
+    const result = {
       totalSolved: (lc?.totalSolved || 0) + (gfg?.totalSolved || 0),
       activeDays:  lc?.totalActiveDays || activeDays,
       streak:      lc?.streak || 0,
@@ -254,9 +264,17 @@ router.get('/', async (req, res) => {
         } : null,
       },
       codolioUrl: `https://codolio.com/profile/${LC_USERNAME}`,
-    });
+    };
+
+    cacheData = result;
+    cacheTime = Date.now();
+
+    res.json(result);
   } catch (err) {
     console.error('Codolio aggregator error:', err.message);
+    if (cacheData) {
+      return res.json(cacheData);
+    }
     res.json({
       totalSolved: 252, activeDays: 85, streak: 14,
       heatmap: { weeks: [], totalSubmissions: 0 },

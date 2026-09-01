@@ -28,33 +28,59 @@ function ContributionGrid({ weeks }) {
 
   const MONTH_GAP = 6; // extra px gap between months
 
-  // Determine month for each week and compute X offsets with month gaps
+  // Determine month for each week by majority days count and compute X offsets with month gaps
   const weekMeta = [];
   let lastMonth = -1;
   let xOffset = 0;
+
   weeks.forEach((week, wIdx) => {
-    const firstDay = week.contributionDays[0];
-    if (!firstDay) return;
-    const [, m] = firstDay.date.split("-").map(Number);
-    const monthIndex = m - 1;
-    const isNewMonth = monthIndex !== lastMonth;
+    if (!week.contributionDays || week.contributionDays.length === 0) return;
+
+    // Count occurrence of each month in this week column
+    const monthCounts = {};
+    week.contributionDays.forEach((d) => {
+      const [, m] = d.date.split("-").map(Number);
+      const mIdx = m - 1;
+      monthCounts[mIdx] = (monthCounts[mIdx] || 0) + 1;
+    });
+
+    // Pick majority month for this week column
+    let bestMonth = -1;
+    let maxCount = -1;
+    Object.entries(monthCounts).forEach(([mIdxStr, cnt]) => {
+      if (cnt > maxCount) {
+        maxCount = cnt;
+        bestMonth = Number(mIdxStr);
+      }
+    });
+
+    if (bestMonth === -1) return;
+
+    const isNewMonth = bestMonth !== lastMonth;
     if (isNewMonth && lastMonth !== -1) {
       xOffset += MONTH_GAP;
     }
-    weekMeta.push({ wIdx, x: xOffset, month: monthIndex, isNewMonth });
+    weekMeta.push({ wIdx, x: xOffset, month: bestMonth, isNewMonth });
     xOffset += STEP;
-    lastMonth = monthIndex;
+    lastMonth = bestMonth;
   });
 
   const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  // Build month labels from weekMeta
-  const monthLabels = weekMeta
-    .filter((w) => w.isNewMonth || w.wIdx === 0)
-    .map((w) => ({
-      x: w.x,
-      label: MONTH_NAMES[w.month],
-    }));
+  // Build month labels positioned directly above their starting columns
+  const monthLabels = [];
+  let lastLabelX = -30;
+  weekMeta.forEach((w) => {
+    if (w.isNewMonth) {
+      if (w.x - lastLabelX >= 20) {
+        monthLabels.push({
+          x: w.x,
+          label: MONTH_NAMES[w.month],
+        });
+        lastLabelX = w.x;
+      }
+    }
+  });
 
   const gridWidth = xOffset - GAP;
   const gridHeight = 7 * STEP - GAP;

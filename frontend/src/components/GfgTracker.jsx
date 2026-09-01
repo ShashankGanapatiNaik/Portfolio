@@ -47,12 +47,25 @@ function ContributionGrid({ weeks }) {
 
   const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const monthLabels = weekMeta
-    .filter((w) => w.isNewMonth || w.wIdx === 0)
-    .map((w) => ({
-      x: w.x,
-      label: MONTH_NAMES[w.month],
-    }));
+  const monthLabels = [];
+  let lastLabelX = -999;
+  weekMeta.forEach((w) => {
+    if (w.isNewMonth) {
+      if (w.x - lastLabelX >= 32) {
+        monthLabels.push({
+          x: w.x,
+          label: MONTH_NAMES[w.month],
+        });
+        lastLabelX = w.x;
+      } else if (monthLabels.length === 1 && w.x - lastLabelX < 32) {
+        monthLabels[0] = {
+          x: w.x,
+          label: MONTH_NAMES[w.month],
+        };
+        lastLabelX = w.x;
+      }
+    }
+  });
 
   const gridWidth = xOffset - GAP;
   const gridHeight = 7 * STEP - GAP;
